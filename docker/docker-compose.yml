@@ -1,0 +1,63 @@
+# ClickHouse server for the INFO-H-419 project (TPC-DS and TPC-DI).
+#
+# Usage (from the docker/ folder):
+#   docker compose up -d          # start ClickHouse in the background
+#   docker compose ps             # check that it is running ("healthy")
+#   docker compose exec clickhouse clickhouse-client   # open a SQL shell
+#   docker compose down           # stop (the data is kept in the volume)
+#   docker compose down -v        # stop AND delete all the data
+
+services:
+  clickhouse:
+    # Pinned LTS version, used for BOTH parts of the project.
+    # Never use "latest": results must be reproducible.
+    image: clickhouse/clickhouse-server:26.8
+    container_name: infoh419-clickhouse
+    hostname: clickhouse
+
+    ports:
+      - "8123:8123"   # HTTP interface (used by clickhouse-connect in Python)
+      - "9000:9000"   # native interface (used by clickhouse-client)
+
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: infoh419
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+
+    volumes:
+      # Database files live in a Docker-managed volume.
+      # On Windows this keeps them inside WSL2 (fast I/O), not on /mnt/c.
+      - clickhouse-data:/var/lib/clickhouse
+      # Generated TPC data (../data on the host), readable from SQL with file().
+      - ../data:/var/lib/clickhouse/user_files/data:ro
+
+    # Recommended by the ClickHouse Docker image documentation.
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    cap_add:
+      - SYS_NICE
+      - NET_ADMIN
+      - IPC_LOCK
+
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--password", "infoh419", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # TPC-DS tools (dsdgen, dsqgen). Not started by "docker compose up":
+  # it only runs on demand, e.g.
+  #   docker compose run --rm tpcds-kit dsdgen -SCALE 1 -DIR /data/tpcds/sf1 -TERMINATE N
+  tpcds-kit:
+    build:
+      context: ../tools/DSGen-software-code-4.0.0
+      dockerfile: ../../docker/tpcds-kit/Dockerfile
+    image: infoh419/tpcds-kit:4.0.0
+    profiles: ["tools"]
+    volumes:
+      - ../data:/data
+
+volumes:
+  clickhouse-data:
