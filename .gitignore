@@ -1,0 +1,62 @@
+# ===== Generated benchmark data (never commit, only the scripts that create it) =====
+data/
+**/data/
+*.dat
+*.csv.gz
+*.tbl
+
+# TPC-DI generated batches
+Batch1/
+Batch2/
+Batch3/
+
+# ===== Official TPC tools (licence: do not redistribute, see README) =====
+*TPC-DS*_Tools*.zip
+*TPC-DI*_Tools*.zip
+*TPC-DS*_Tools*/
+*TPC-DI*_Tools*/
+tools/
+DIGen.jar
+
+# Compiled tpcds-kit binaries
+dsdgen
+dsqgen
+*.o
+*.idx
+
+# ===== ClickHouse / Docker runtime files =====
+clickhouse-data/
+clickhouse-logs/
+*.log
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# ===== Report (LaTeX build files) =====
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# ===== OS / editors =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Keep the results folders: raw result CSVs ARE committed (they are small)
+!part1-tpcds/results/**/*.csv
+!part2-tpcdi/results/**/*.csv
