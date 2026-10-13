@@ -33,7 +33,16 @@ infoh419-clickhouse/
 
 - Docker (Docker Desktop + WSL2 on Windows)
 - Python 3.11+ with `clickhouse-connect`, `pandas`, `matplotlib`, `duckdb`
-- ClickHouse version: *TODO: pin the LTS version used*
+- ClickHouse version: 26.8.24.9 (LTS), pinned in `docker/docker-compose.yml`
+
+### Windows users
+
+Run every command from **WSL2** (Ubuntu terminal), with the repo cloned **inside the WSL filesystem** (e.g. `~/infoh419-clickhouse`):
+
+- From a Windows drive (`C:\...` or `/mnt/c/...`), the bind mount makes data generation about 30× slower (SF 1: ~68 min instead of ~2 min).
+- Git Bash rewrites paths such as `/data/...`, which breaks the Docker commands.
+
+Also raise the memory available to WSL2 in `C:\Users\<you>\.wslconfig` (`[wsl2]` / `memory=12GB`), then run `wsl --shutdown`.
 
 ## Getting the TPC tools
 
