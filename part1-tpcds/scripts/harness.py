@@ -13,7 +13,7 @@ Commands (from the repo root, with ClickHouse running: cd docker && docker compo
   campaign    load (optional), power, throughput, 1 cold + 3 warm power runs
 
 Examples:
-  python3 part1-tpcds/scripts/harness.py validate --sf 1 --queries <dir of qNN.sql> --only 26-50 --out results/clickhouse_sf1
+  python3 part1-tpcds/scripts/harness.py validate --sf 1 --queries data/queries/validation --only 26-50 --out data/validation/sf1
   python3 part1-tpcds/scripts/harness.py power --sf 1 --stream <streams dir>/query_0.sql
   python3 part1-tpcds/scripts/harness.py campaign --sf 10 --streams-dir <dir with query_0..4.sql> --load-cmd "<loader>"
 """

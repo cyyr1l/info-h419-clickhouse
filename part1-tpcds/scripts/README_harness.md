@@ -10,8 +10,8 @@ settings profile [`part1-tpcds/settings.json`](../settings.json).
 Run your queries once on SF 1 and save each result as CSV, named like the reference answers:
 
 ```bash
-python3 part1-tpcds/scripts/harness.py validate --sf 1 --queries <dir of qNN.sql> --only 26-50 --out results/clickhouse_sf1
-python3 part1-tpcds/scripts/compare.py part1-tpcds/reference/sf1 results/clickhouse_sf1
+python3 part1-tpcds/scripts/harness.py validate --sf 1 --queries data/queries/validation --only 26-50 --out data/validation/sf1
+python3 part1-tpcds/scripts/compare.py part1-tpcds/reference/sf1 data/validation/sf1
 ```
 
 `--queries` takes a folder of `qNN.sql` files, single files, or stream files. The database defaults to
