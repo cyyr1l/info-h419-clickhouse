@@ -1,0 +1,19 @@
+{
+  "about": "Global settings profile, sent by scripts/harness.py with every query (docs/benchmark-protocol.md, section 4). sql_compatibility is owned by role 3: the profile of ClickHouse's own TPC-DS benchmark (tests/benchmarks/tpc-ds/settings.json), plus except_default_mode and cast_keep_nullable (CAST of NULL gives NULL, as in SQL; fixes Q18 and Q61). Not prefer_column_name_to_alias: it fixes Q66 but breaks Q33, Q56, Q60 and Q71. benchmark is owned by role 2. Changing any setting means re-running every SF.",
+  "sql_compatibility": {
+    "data_type_default_nullable": 1,
+    "join_use_nulls": 1,
+    "group_by_use_nulls": 1,
+    "union_default_mode": "DISTINCT",
+    "intersect_default_mode": "DISTINCT",
+    "except_default_mode": "DISTINCT",
+    "joined_subquery_requires_alias": 0,
+    "cast_keep_nullable": 1
+  },
+  "benchmark": {
+    "use_query_cache": 0,
+    "use_query_condition_cache": 0,
+    "max_execution_time": 1800,
+    "timeout_overflow_mode": "throw"
+  }
+}
