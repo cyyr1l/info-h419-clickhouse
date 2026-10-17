@@ -1,0 +1,91 @@
+"substr(w_warehouse_name, 1, 20)",sm_type,cc_name,INTERVAL 30 DAY,31-INTERVAL 60 DAY,61-INTERVAL 90 DAY,91-INTERVAL 120 DAY,>INTERVAL 120 DAY
+Bad cards must make.,EXPRESS,Mid Atlantic,1188.0,1338.0,1224.0,0.0,0.0
+Bad cards must make.,EXPRESS,NY Metro,1156.0,1315.0,1288.0,0.0,0.0
+Bad cards must make.,EXPRESS,North Midwest,1235.0,1260.0,1325.0,0.0,0.0
+Bad cards must make.,LIBRARY,Mid Atlantic,876.0,933.0,976.0,0.0,0.0
+Bad cards must make.,LIBRARY,NY Metro,941.0,988.0,955.0,0.0,0.0
+Bad cards must make.,LIBRARY,North Midwest,928.0,1001.0,964.0,0.0,0.0
+Bad cards must make.,NEXT DAY,Mid Atlantic,1248.0,1250.0,1269.0,0.0,0.0
+Bad cards must make.,NEXT DAY,NY Metro,1219.0,1281.0,1331.0,0.0,0.0
+Bad cards must make.,NEXT DAY,North Midwest,1176.0,1295.0,1283.0,0.0,0.0
+Bad cards must make.,OVERNIGHT,Mid Atlantic,964.0,947.0,929.0,0.0,0.0
+Bad cards must make.,OVERNIGHT,NY Metro,880.0,981.0,964.0,0.0,0.0
+Bad cards must make.,OVERNIGHT,North Midwest,905.0,1036.0,981.0,0.0,0.0
+Bad cards must make.,REGULAR,Mid Atlantic,963.0,946.0,895.0,0.0,0.0
+Bad cards must make.,REGULAR,NY Metro,948.0,948.0,948.0,0.0,0.0
+Bad cards must make.,REGULAR,North Midwest,922.0,964.0,962.0,0.0,0.0
+Bad cards must make.,TWO DAY,Mid Atlantic,901.0,955.0,871.0,0.0,0.0
+Bad cards must make.,TWO DAY,NY Metro,963.0,999.0,947.0,0.0,0.0
+Bad cards must make.,TWO DAY,North Midwest,940.0,1000.0,996.0,0.0,0.0
+Conventional childr,EXPRESS,Mid Atlantic,1252.0,1255.0,1281.0,0.0,0.0
+Conventional childr,EXPRESS,NY Metro,1301.0,1272.0,1348.0,0.0,0.0
+Conventional childr,EXPRESS,North Midwest,1223.0,1287.0,1277.0,0.0,0.0
+Conventional childr,LIBRARY,Mid Atlantic,919.0,990.0,957.0,0.0,0.0
+Conventional childr,LIBRARY,NY Metro,948.0,978.0,923.0,0.0,0.0
+Conventional childr,LIBRARY,North Midwest,934.0,967.0,941.0,0.0,0.0
+Conventional childr,NEXT DAY,Mid Atlantic,1252.0,1309.0,1257.0,0.0,0.0
+Conventional childr,NEXT DAY,NY Metro,1288.0,1251.0,1275.0,0.0,0.0
+Conventional childr,NEXT DAY,North Midwest,1231.0,1316.0,1256.0,0.0,0.0
+Conventional childr,OVERNIGHT,Mid Atlantic,912.0,948.0,1097.0,0.0,0.0
+Conventional childr,OVERNIGHT,NY Metro,910.0,901.0,995.0,0.0,0.0
+Conventional childr,OVERNIGHT,North Midwest,964.0,959.0,948.0,0.0,0.0
+Conventional childr,REGULAR,Mid Atlantic,935.0,999.0,946.0,0.0,0.0
+Conventional childr,REGULAR,NY Metro,893.0,962.0,976.0,0.0,0.0
+Conventional childr,REGULAR,North Midwest,921.0,959.0,989.0,0.0,0.0
+Conventional childr,TWO DAY,Mid Atlantic,925.0,892.0,956.0,0.0,0.0
+Conventional childr,TWO DAY,NY Metro,972.0,997.0,915.0,0.0,0.0
+Conventional childr,TWO DAY,North Midwest,912.0,976.0,917.0,0.0,0.0
+Doors canno,EXPRESS,Mid Atlantic,1274.0,1286.0,1333.0,0.0,0.0
+Doors canno,EXPRESS,NY Metro,1208.0,1260.0,1328.0,0.0,0.0
+Doors canno,EXPRESS,North Midwest,1207.0,1253.0,1248.0,0.0,0.0
+Doors canno,LIBRARY,Mid Atlantic,934.0,912.0,958.0,0.0,0.0
+Doors canno,LIBRARY,NY Metro,960.0,932.0,973.0,0.0,0.0
+Doors canno,LIBRARY,North Midwest,961.0,952.0,941.0,0.0,0.0
+Doors canno,NEXT DAY,Mid Atlantic,1220.0,1263.0,1228.0,0.0,0.0
+Doors canno,NEXT DAY,NY Metro,1274.0,1309.0,1256.0,0.0,0.0
+Doors canno,NEXT DAY,North Midwest,1267.0,1299.0,1240.0,0.0,0.0
+Doors canno,OVERNIGHT,Mid Atlantic,894.0,1010.0,979.0,0.0,0.0
+Doors canno,OVERNIGHT,NY Metro,884.0,929.0,998.0,0.0,0.0
+Doors canno,OVERNIGHT,North Midwest,904.0,938.0,942.0,0.0,0.0
+Doors canno,REGULAR,Mid Atlantic,948.0,919.0,977.0,0.0,0.0
+Doors canno,REGULAR,NY Metro,922.0,958.0,1019.0,0.0,0.0
+Doors canno,REGULAR,North Midwest,943.0,925.0,969.0,0.0,0.0
+Doors canno,TWO DAY,Mid Atlantic,913.0,984.0,962.0,0.0,0.0
+Doors canno,TWO DAY,NY Metro,921.0,970.0,972.0,0.0,0.0
+Doors canno,TWO DAY,North Midwest,899.0,960.0,978.0,0.0,0.0
+Important issues liv,EXPRESS,Mid Atlantic,1266.0,1256.0,1280.0,0.0,0.0
+Important issues liv,EXPRESS,NY Metro,1221.0,1253.0,1262.0,0.0,0.0
+Important issues liv,EXPRESS,North Midwest,1253.0,1280.0,1331.0,0.0,0.0
+Important issues liv,LIBRARY,Mid Atlantic,913.0,946.0,990.0,0.0,0.0
+Important issues liv,LIBRARY,NY Metro,912.0,984.0,964.0,0.0,0.0
+Important issues liv,LIBRARY,North Midwest,914.0,993.0,982.0,0.0,0.0
+Important issues liv,NEXT DAY,Mid Atlantic,1250.0,1267.0,1248.0,0.0,0.0
+Important issues liv,NEXT DAY,NY Metro,1265.0,1285.0,1278.0,0.0,0.0
+Important issues liv,NEXT DAY,North Midwest,1248.0,1299.0,1268.0,0.0,0.0
+Important issues liv,OVERNIGHT,Mid Atlantic,879.0,928.0,927.0,0.0,0.0
+Important issues liv,OVERNIGHT,NY Metro,974.0,966.0,950.0,0.0,0.0
+Important issues liv,OVERNIGHT,North Midwest,916.0,970.0,944.0,0.0,0.0
+Important issues liv,REGULAR,Mid Atlantic,934.0,938.0,924.0,0.0,0.0
+Important issues liv,REGULAR,NY Metro,901.0,967.0,945.0,0.0,0.0
+Important issues liv,REGULAR,North Midwest,907.0,963.0,954.0,0.0,0.0
+Important issues liv,TWO DAY,Mid Atlantic,933.0,1002.0,947.0,0.0,0.0
+Important issues liv,TWO DAY,NY Metro,983.0,935.0,939.0,0.0,0.0
+Important issues liv,TWO DAY,North Midwest,909.0,981.0,994.0,0.0,0.0
+,EXPRESS,Mid Atlantic,1234.0,1307.0,1343.0,0.0,0.0
+,EXPRESS,NY Metro,1229.0,1336.0,1269.0,0.0,0.0
+,EXPRESS,North Midwest,1223.0,1294.0,1318.0,0.0,0.0
+,LIBRARY,Mid Atlantic,916.0,956.0,987.0,0.0,0.0
+,LIBRARY,NY Metro,917.0,950.0,960.0,0.0,0.0
+,LIBRARY,North Midwest,933.0,954.0,938.0,0.0,0.0
+,NEXT DAY,Mid Atlantic,1193.0,1272.0,1251.0,0.0,0.0
+,NEXT DAY,NY Metro,1295.0,1284.0,1216.0,0.0,0.0
+,NEXT DAY,North Midwest,1252.0,1268.0,1220.0,0.0,0.0
+,OVERNIGHT,Mid Atlantic,886.0,969.0,932.0,0.0,0.0
+,OVERNIGHT,NY Metro,906.0,955.0,963.0,0.0,0.0
+,OVERNIGHT,North Midwest,906.0,935.0,947.0,0.0,0.0
+,REGULAR,Mid Atlantic,903.0,941.0,961.0,0.0,0.0
+,REGULAR,NY Metro,968.0,1003.0,963.0,0.0,0.0
+,REGULAR,North Midwest,972.0,960.0,979.0,0.0,0.0
+,TWO DAY,Mid Atlantic,929.0,1001.0,925.0,0.0,0.0
+,TWO DAY,NY Metro,920.0,928.0,998.0,0.0,0.0
+,TWO DAY,North Midwest,923.0,957.0,956.0,0.0,0.0

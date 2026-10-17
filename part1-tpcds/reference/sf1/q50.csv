@@ -1,0 +1,7 @@
+s_store_name,s_company_id,s_street_number,s_street_name,s_street_type,s_suite_number,s_city,s_county,s_state,s_zip,INTERVAL 30 DAY,31-INTERVAL 60 DAY,61-INTERVAL 90 DAY,91-INTERVAL 120 DAY,>INTERVAL 120 DAY
+able,1,255,Sycamore ,Dr.,Suite 410,Midway,Williamson County,TN,31904,99.0,78.0,48.0,45.0,110.0
+ation,1,811,Lee ,Circle,Suite T,Midway,Williamson County,TN,31904,98.0,100.0,46.0,66.0,95.0
+bar,1,175,4th ,Court,Suite C,Midway,Williamson County,TN,31904,115.0,81.0,46.0,54.0,106.0
+eing,1,226,12th ,Lane,Suite D,Fairview,Williamson County,TN,35709,101.0,72.0,67.0,54.0,98.0
+ese,1,27,Lake ,Ln,Suite 260,Midway,Williamson County,TN,31904,119.0,82.0,53.0,51.0,106.0
+ought,1,767,Spring ,Wy,Suite 250,Midway,Williamson County,TN,31904,112.0,95.0,47.0,59.0,100.0
