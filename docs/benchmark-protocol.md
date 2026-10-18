@@ -6,13 +6,17 @@
 Our results are *derived from TPC-DS*, not official TPC results. Every deviation from the spec is listed in section 9.
 
 ## 1. System under test
-- **Machine:** ②'s main machine, Windows, 32 GB RAM. *To fill in for the report: CPU model, cores/threads, disk model and type, Windows build.* The harness also records the machine in `environment.json` (section 8).
-- **Software:** ClickHouse **26.8.24.9** (pinned) in Docker Desktop with the WSL2 backend; TPC-DS kit 4.0.0 (`dsdgen`, `dsqgen`).
-- **WSL2 resources:** Docker Desktop gives WSL2 only 50% of the RAM by default (a 16 GB laptop shows 8 GB in Docker). Create `%UserProfile%\.wslconfig`:
+- **Machine:** ②'s desktop PC. The harness also records the machine as seen from WSL2 in `environment.json` (section 8).
+  - CPU: Intel Core i5-12600KF, 10 cores (6 performance + 4 efficiency cores), 16 threads.
+  - RAM: 32 GB (31.8 GB usable).
+  - Disk: Kingston NV2 1 TB NVMe SSD (SNV2S1000G), the only internal disk; it holds the WSL2 and Docker virtual disks.
+  - OS: Windows 11 Pro 25H2, build 26200.9711.
+- **Software:** ClickHouse **26.8.24.9** (pinned) in Docker Desktop 4.56.0 (Docker Engine 29.1.3) with the WSL2 backend (WSL 2.6.1, kernel 6.6.87.2, Ubuntu 24.04.4 LTS); TPC-DS kit 4.0.0 (`dsdgen`, `dsqgen`); Python 3.12.3 for the harness.
+- **WSL2 resources:** Docker Desktop gives WSL2 only 50% of the RAM by default (a 16 GB laptop shows 8 GB in Docker). Create `%UserProfile%\.wslconfig` with 24 GB and all 16 logical cores:
   ```ini
   [wsl2]
   memory=24GB
-  processors=<number of logical cores>
+  processors=16
   ```
   then run `wsl --shutdown` and restart Docker Desktop.
 - **Data location:** clone the repo inside the WSL2 filesystem (e.g. `~/info-h419-clickhouse` in Ubuntu), so `data/` is not on a Windows drive.
