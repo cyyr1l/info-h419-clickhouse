@@ -20,7 +20,7 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q14 | ① | OK | pending | 2 statements |
 | Q15 | ① | OK | pending |  |
 | Q16 | ① | OK | pending |  |
-| Q17 | ① | OK | pending |  |
+| Q17 | ① | OK | pending | ③: NULL/sample-size fix prepared; synthetic comparison passed; SF1 pending. |
 | Q18 | ① | OK | pending |  |
 | Q19 | ① | OK | pending |  |
 | Q20 | ① | OK | pending |  |
@@ -60,8 +60,8 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q54 | ③ | OK | pending | **Empty result at SF 1** (q54): weak check, validate with official parameters |
 | Q55 | ③ | OK | pending |  |
 | Q56 | ③ | OK | pending |  |
-| Q57 | ③ | OK | pending |  |
-| Q58 | ③ | OK | pending | **Empty result at SF 1** (q58): weak check, validate with official parameters |
+| Q57 | ③ | OK | pending | Explicit v2 aliases prepared; synthetic comparison passed; SF1 pending. |
+| Q58 | ③ | OK | pending | **Empty result at SF 1** (q58): weak check, validate with official parameters. Qualified ordering fix prepared; non-empty synthetic comparison passed; SF1 pending. |
 | Q59 | ③ | OK | pending |  |
 | Q60 | ③ | OK | pending |  |
 | Q61 | ③ | OK | pending |  |
@@ -69,7 +69,7 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q63 | ③ | OK | pending |  |
 | Q64 | ③ | OK | pending |  |
 | Q65 | ③ | OK | pending |  |
-| Q66 | ③ | OK | pending |  |
+| Q66 | ③ | OK | pending | Qualified aggregate inputs prepared; synthetic comparison passed; SF1 pending. |
 | Q67 | ③ | OK | pending |  |
 | Q68 | ③ | OK | pending |  |
 | Q69 | ③ | OK | pending |  |
@@ -78,7 +78,7 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q72 | ③ | OK | pending |  |
 | Q73 | ③ | OK | pending |  |
 | Q74 | ③ | OK | pending |  |
-| Q75 | ③ | OK | pending |  |
+| Q75 | ③ | OK | pending | Decimal-compatible COALESCE defaults prepared; synthetic comparison passed; SF1 pending. |
 | Q76 | ④ | OK | pending |  |
 | Q77 | ④ | OK | pending | Reference needed a fix (see CHANGES.md) |
 | Q78 | ④ | OK | pending |  |
