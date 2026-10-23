@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS customer_address
     ca_state          Nullable(String),
     ca_zip            Nullable(String),
     ca_country        Nullable(String),
-    ca_gmt_offset     Nullable(Decimal(5, 2)),
+    ca_gmt_offset     Nullable(Decimal(9, 6)),
     ca_location_type  Nullable(String)
 )
 ENGINE = MergeTree
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS warehouse
     w_state            Nullable(String),
     w_zip              Nullable(String),
     w_country          Nullable(String),
-    w_gmt_offset       Nullable(Decimal(5, 2))
+    w_gmt_offset       Nullable(Decimal(9, 6))
 )
 ENGINE = MergeTree
 ORDER BY w_warehouse_sk;
@@ -157,8 +157,8 @@ CREATE TABLE IF NOT EXISTS item
     i_rec_start_date  Nullable(Date32),
     i_rec_end_date    Nullable(Date32),
     i_item_desc       Nullable(String),
-    i_current_price   Nullable(Decimal(7, 2)),
-    i_wholesale_cost  Nullable(Decimal(7, 2)),
+    i_current_price   Nullable(Decimal(11, 6)),
+    i_wholesale_cost  Nullable(Decimal(11, 6)),
     i_brand_id        Nullable(Int32),
     i_brand           Nullable(String),
     i_class_id        Nullable(Int32),
@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS promotion
     p_start_date_sk    Nullable(Int32),
     p_end_date_sk      Nullable(Int32),
     p_item_sk          Nullable(Int32),
-    p_cost             Nullable(Decimal(15, 2)),
+    p_cost             Nullable(Decimal(19, 6)),
     p_response_target  Nullable(Int32),
     p_promo_name       Nullable(String),
     p_channel_dmail    Nullable(String),
@@ -258,8 +258,8 @@ CREATE TABLE IF NOT EXISTS store
     s_state             Nullable(String),
     s_zip               Nullable(String),
     s_country           Nullable(String),
-    s_gmt_offset        Nullable(Decimal(5, 2)),
-    s_tax_percentage    Nullable(Decimal(5, 2))
+    s_gmt_offset        Nullable(Decimal(9, 6)),
+    s_tax_percentage    Nullable(Decimal(9, 6))
 )
 ENGINE = MergeTree
 ORDER BY s_store_sk;
@@ -296,8 +296,8 @@ CREATE TABLE IF NOT EXISTS call_center
     cc_state           Nullable(String),
     cc_zip             Nullable(String),
     cc_country         Nullable(String),
-    cc_gmt_offset      Nullable(Decimal(5, 2)),
-    cc_tax_percentage  Nullable(Decimal(5, 2))
+    cc_gmt_offset      Nullable(Decimal(9, 6)),
+    cc_tax_percentage  Nullable(Decimal(9, 6))
 )
 ENGINE = MergeTree
 ORDER BY cc_call_center_sk;
@@ -329,8 +329,8 @@ CREATE TABLE IF NOT EXISTS web_site
     web_state           Nullable(String),
     web_zip             Nullable(String),
     web_country         Nullable(String),
-    web_gmt_offset      Nullable(Decimal(5, 2)),
-    web_tax_percentage  Nullable(Decimal(5, 2))
+    web_gmt_offset      Nullable(Decimal(9, 6)),
+    web_tax_percentage  Nullable(Decimal(9, 6))
 )
 ENGINE = MergeTree
 ORDER BY web_site_sk;
@@ -384,18 +384,18 @@ CREATE TABLE IF NOT EXISTS store_sales
     ss_promo_sk            Nullable(Int32),
     ss_ticket_number       Int64 NOT NULL,
     ss_quantity            Nullable(Int32),
-    ss_wholesale_cost      Nullable(Decimal(7, 2)),
-    ss_list_price          Nullable(Decimal(7, 2)),
-    ss_sales_price         Nullable(Decimal(7, 2)),
-    ss_ext_discount_amt    Nullable(Decimal(7, 2)),
-    ss_ext_sales_price     Nullable(Decimal(7, 2)),
-    ss_ext_wholesale_cost  Nullable(Decimal(7, 2)),
-    ss_ext_list_price      Nullable(Decimal(7, 2)),
-    ss_ext_tax             Nullable(Decimal(7, 2)),
-    ss_coupon_amt          Nullable(Decimal(7, 2)),
-    ss_net_paid            Nullable(Decimal(7, 2)),
-    ss_net_paid_inc_tax    Nullable(Decimal(7, 2)),
-    ss_net_profit          Nullable(Decimal(7, 2))
+    ss_wholesale_cost      Nullable(Decimal(11, 6)),
+    ss_list_price          Nullable(Decimal(11, 6)),
+    ss_sales_price         Nullable(Decimal(11, 6)),
+    ss_ext_discount_amt    Nullable(Decimal(11, 6)),
+    ss_ext_sales_price     Nullable(Decimal(11, 6)),
+    ss_ext_wholesale_cost  Nullable(Decimal(11, 6)),
+    ss_ext_list_price      Nullable(Decimal(11, 6)),
+    ss_ext_tax             Nullable(Decimal(11, 6)),
+    ss_coupon_amt          Nullable(Decimal(11, 6)),
+    ss_net_paid            Nullable(Decimal(11, 6)),
+    ss_net_paid_inc_tax    Nullable(Decimal(11, 6)),
+    ss_net_profit          Nullable(Decimal(11, 6))
 )
 ENGINE = MergeTree
 ORDER BY (ifNull(ss_sold_date_sk, -1), ss_item_sk, ss_ticket_number);
@@ -414,15 +414,15 @@ CREATE TABLE IF NOT EXISTS store_returns
     sr_reason_sk         Nullable(Int32),
     sr_ticket_number     Int64 NOT NULL,
     sr_return_quantity   Nullable(Int32),
-    sr_return_amt        Nullable(Decimal(7, 2)),
-    sr_return_tax        Nullable(Decimal(7, 2)),
-    sr_return_amt_inc_tax Nullable(Decimal(7, 2)),
-    sr_fee               Nullable(Decimal(7, 2)),
-    sr_return_ship_cost  Nullable(Decimal(7, 2)),
-    sr_refunded_cash     Nullable(Decimal(7, 2)),
-    sr_reversed_charge   Nullable(Decimal(7, 2)),
-    sr_store_credit      Nullable(Decimal(7, 2)),
-    sr_net_loss          Nullable(Decimal(7, 2))
+    sr_return_amt        Nullable(Decimal(11, 6)),
+    sr_return_tax        Nullable(Decimal(11, 6)),
+    sr_return_amt_inc_tax Nullable(Decimal(11, 6)),
+    sr_fee               Nullable(Decimal(11, 6)),
+    sr_return_ship_cost  Nullable(Decimal(11, 6)),
+    sr_refunded_cash     Nullable(Decimal(11, 6)),
+    sr_reversed_charge   Nullable(Decimal(11, 6)),
+    sr_store_credit      Nullable(Decimal(11, 6)),
+    sr_net_loss          Nullable(Decimal(11, 6))
 )
 ENGINE = MergeTree
 ORDER BY (ifNull(sr_returned_date_sk, -1), sr_item_sk, sr_ticket_number);
@@ -448,21 +448,21 @@ CREATE TABLE IF NOT EXISTS web_sales
     ws_promo_sk              Nullable(Int32),
     ws_order_number          Int64 NOT NULL,
     ws_quantity              Nullable(Int32),
-    ws_wholesale_cost        Nullable(Decimal(7, 2)),
-    ws_list_price            Nullable(Decimal(7, 2)),
-    ws_sales_price           Nullable(Decimal(7, 2)),
-    ws_ext_discount_amt      Nullable(Decimal(7, 2)),
-    ws_ext_sales_price       Nullable(Decimal(7, 2)),
-    ws_ext_wholesale_cost    Nullable(Decimal(7, 2)),
-    ws_ext_list_price        Nullable(Decimal(7, 2)),
-    ws_ext_tax               Nullable(Decimal(7, 2)),
-    ws_coupon_amt            Nullable(Decimal(7, 2)),
-    ws_ext_ship_cost         Nullable(Decimal(7, 2)),
-    ws_net_paid              Nullable(Decimal(7, 2)),
-    ws_net_paid_inc_tax      Nullable(Decimal(7, 2)),
-    ws_net_paid_inc_ship     Nullable(Decimal(7, 2)),
-    ws_net_paid_inc_ship_tax Nullable(Decimal(7, 2)),
-    ws_net_profit            Nullable(Decimal(7, 2))
+    ws_wholesale_cost        Nullable(Decimal(11, 6)),
+    ws_list_price            Nullable(Decimal(11, 6)),
+    ws_sales_price           Nullable(Decimal(11, 6)),
+    ws_ext_discount_amt      Nullable(Decimal(11, 6)),
+    ws_ext_sales_price       Nullable(Decimal(11, 6)),
+    ws_ext_wholesale_cost    Nullable(Decimal(11, 6)),
+    ws_ext_list_price        Nullable(Decimal(11, 6)),
+    ws_ext_tax               Nullable(Decimal(11, 6)),
+    ws_coupon_amt            Nullable(Decimal(11, 6)),
+    ws_ext_ship_cost         Nullable(Decimal(11, 6)),
+    ws_net_paid              Nullable(Decimal(11, 6)),
+    ws_net_paid_inc_tax      Nullable(Decimal(11, 6)),
+    ws_net_paid_inc_ship     Nullable(Decimal(11, 6)),
+    ws_net_paid_inc_ship_tax Nullable(Decimal(11, 6)),
+    ws_net_profit            Nullable(Decimal(11, 6))
 )
 ENGINE = MergeTree
 ORDER BY (ifNull(ws_sold_date_sk, -1), ws_item_sk, ws_order_number);
@@ -485,15 +485,15 @@ CREATE TABLE IF NOT EXISTS web_returns
     wr_reason_sk            Nullable(Int32),
     wr_order_number         Int64 NOT NULL,
     wr_return_quantity      Nullable(Int32),
-    wr_return_amt           Nullable(Decimal(7, 2)),
-    wr_return_tax           Nullable(Decimal(7, 2)),
-    wr_return_amt_inc_tax   Nullable(Decimal(7, 2)),
-    wr_fee                  Nullable(Decimal(7, 2)),
-    wr_return_ship_cost     Nullable(Decimal(7, 2)),
-    wr_refunded_cash        Nullable(Decimal(7, 2)),
-    wr_reversed_charge      Nullable(Decimal(7, 2)),
-    wr_account_credit       Nullable(Decimal(7, 2)),
-    wr_net_loss             Nullable(Decimal(7, 2))
+    wr_return_amt           Nullable(Decimal(11, 6)),
+    wr_return_tax           Nullable(Decimal(11, 6)),
+    wr_return_amt_inc_tax   Nullable(Decimal(11, 6)),
+    wr_fee                  Nullable(Decimal(11, 6)),
+    wr_return_ship_cost     Nullable(Decimal(11, 6)),
+    wr_refunded_cash        Nullable(Decimal(11, 6)),
+    wr_reversed_charge      Nullable(Decimal(11, 6)),
+    wr_account_credit       Nullable(Decimal(11, 6)),
+    wr_net_loss             Nullable(Decimal(11, 6))
 )
 ENGINE = MergeTree
 ORDER BY (ifNull(wr_returned_date_sk, -1), wr_item_sk, wr_order_number);
@@ -519,21 +519,21 @@ CREATE TABLE IF NOT EXISTS catalog_sales
     cs_promo_sk              Nullable(Int32),
     cs_order_number          Int64 NOT NULL,
     cs_quantity              Nullable(Int32),
-    cs_wholesale_cost        Nullable(Decimal(7, 2)),
-    cs_list_price            Nullable(Decimal(7, 2)),
-    cs_sales_price           Nullable(Decimal(7, 2)),
-    cs_ext_discount_amt      Nullable(Decimal(7, 2)),
-    cs_ext_sales_price       Nullable(Decimal(7, 2)),
-    cs_ext_wholesale_cost    Nullable(Decimal(7, 2)),
-    cs_ext_list_price        Nullable(Decimal(7, 2)),
-    cs_ext_tax               Nullable(Decimal(7, 2)),
-    cs_coupon_amt            Nullable(Decimal(7, 2)),
-    cs_ext_ship_cost         Nullable(Decimal(7, 2)),
-    cs_net_paid              Nullable(Decimal(7, 2)),
-    cs_net_paid_inc_tax      Nullable(Decimal(7, 2)),
-    cs_net_paid_inc_ship     Nullable(Decimal(7, 2)),
-    cs_net_paid_inc_ship_tax Nullable(Decimal(7, 2)),
-    cs_net_profit            Nullable(Decimal(7, 2))
+    cs_wholesale_cost        Nullable(Decimal(11, 6)),
+    cs_list_price            Nullable(Decimal(11, 6)),
+    cs_sales_price           Nullable(Decimal(11, 6)),
+    cs_ext_discount_amt      Nullable(Decimal(11, 6)),
+    cs_ext_sales_price       Nullable(Decimal(11, 6)),
+    cs_ext_wholesale_cost    Nullable(Decimal(11, 6)),
+    cs_ext_list_price        Nullable(Decimal(11, 6)),
+    cs_ext_tax               Nullable(Decimal(11, 6)),
+    cs_coupon_amt            Nullable(Decimal(11, 6)),
+    cs_ext_ship_cost         Nullable(Decimal(11, 6)),
+    cs_net_paid              Nullable(Decimal(11, 6)),
+    cs_net_paid_inc_tax      Nullable(Decimal(11, 6)),
+    cs_net_paid_inc_ship     Nullable(Decimal(11, 6)),
+    cs_net_paid_inc_ship_tax Nullable(Decimal(11, 6)),
+    cs_net_profit            Nullable(Decimal(11, 6))
 )
 ENGINE = MergeTree
 ORDER BY (ifNull(cs_sold_date_sk, -1), cs_item_sk, cs_order_number);
@@ -559,15 +559,15 @@ CREATE TABLE IF NOT EXISTS catalog_returns
     cr_reason_sk             Nullable(Int32),
     cr_order_number          Int64 NOT NULL,
     cr_return_quantity       Nullable(Int32),
-    cr_return_amount         Nullable(Decimal(7, 2)),
-    cr_return_tax            Nullable(Decimal(7, 2)),
-    cr_return_amt_inc_tax    Nullable(Decimal(7, 2)),
-    cr_fee                   Nullable(Decimal(7, 2)),
-    cr_return_ship_cost      Nullable(Decimal(7, 2)),
-    cr_refunded_cash         Nullable(Decimal(7, 2)),
-    cr_reversed_charge       Nullable(Decimal(7, 2)),
-    cr_store_credit          Nullable(Decimal(7, 2)),
-    cr_net_loss              Nullable(Decimal(7, 2))
+    cr_return_amount         Nullable(Decimal(11, 6)),
+    cr_return_tax            Nullable(Decimal(11, 6)),
+    cr_return_amt_inc_tax    Nullable(Decimal(11, 6)),
+    cr_fee                   Nullable(Decimal(11, 6)),
+    cr_return_ship_cost      Nullable(Decimal(11, 6)),
+    cr_refunded_cash         Nullable(Decimal(11, 6)),
+    cr_reversed_charge       Nullable(Decimal(11, 6)),
+    cr_store_credit          Nullable(Decimal(11, 6)),
+    cr_net_loss              Nullable(Decimal(11, 6))
 )
 ENGINE = MergeTree
 ORDER BY (ifNull(cr_returned_date_sk, -1), cr_item_sk, cr_order_number);
