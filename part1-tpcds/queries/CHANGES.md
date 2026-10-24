@@ -13,6 +13,7 @@ Every change made to a TPC-DS query goes here. This file becomes an appendix of 
 | Q58 | Explicitly alias the selected item identifier and qualify the ORDER BY key as `ss_items.item_id`. Template: `query58.tpl`. | Remove ambiguity between the three CTE item identifiers. Non-empty synthetic comparison passed; SF1 and official-parameter checks pending. | ③ | 23/10 |
 | Q66 | Qualify the outer aggregate inputs as `x.jan_sales`, ..., `x.dec_net`, including the per-square-foot expressions. Template: `query66.tpl`. | Prevent output aliases from replacing input columns and creating nested aggregates; retain the original output names and leave the global alias setting unchanged. Synthetic comparison passed; SF1 validation pending. | ③ | 23/10 |
 | Q75 | Use integer `0` instead of `0.0` in the three monetary COALESCE expressions. Template: `query75.tpl`. | The integer default is compatible with Decimal arithmetic and avoids a Decimal/Float Variant reaching SUM. Preserve return quantities, UNION semantics and the original ratio casts. Synthetic comparison passed; SF1 validation pending. | ③ | 23/10 |
+| Q78 | Cast the numerator of `ratio` to `Decimal(18,6)`: `round(CAST(ss_qty AS Decimal(18,6))/(…),2)`. Template: `queries/templates/query78.tpl`. | `ss_qty/(…)` is a Float64 in ClickHouse, and `round()` on floats rounds half to even (2.125 → 2.12), while the reference rounds half away from zero (2.13). `round()` on Decimal rounds half away from zero. SF1 validation pending. | ④ | 24/10 |
 
 ## Reference answers (DuckDB)
 

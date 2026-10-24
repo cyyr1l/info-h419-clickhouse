@@ -81,7 +81,7 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q75 | ③ | OK | pending | Decimal-compatible COALESCE defaults prepared; synthetic comparison passed; SF1 pending. |
 | Q76 | ④ | OK | pending |  |
 | Q77 | ④ | OK | pending | Reference needed a fix (see CHANGES.md) |
-| Q78 | ④ | OK | pending |  |
+| Q78 | ④ | OK | pending | Template fixed: round() on Decimal instead of Float64 (see CHANGES.md). SF1 validation pending. |
 | Q79 | ④ | OK | pending |  |
 | Q80 | ④ | OK | pending |  |
 | Q81 | ④ | OK | pending |  |
