@@ -60,6 +60,8 @@ services:
     build:
       context: ../tools/DSGen-software-code-4.0.0
       dockerfile: ../../docker/tpcds-kit/Dockerfile
+      additional_contexts:
+        helper: ./tpcds-kit          # rowcounts.c (our helper, not part of the kit)
     image: infoh419/tpcds-kit:4.0.0
     profiles: ["tools"]
     # Generated files belong to the host user instead of root (Linux/WSL2).
