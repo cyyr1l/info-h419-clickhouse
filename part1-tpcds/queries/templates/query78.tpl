@@ -1,3 +1,6 @@
+-- ClickHouse version of query78.tpl (kit 4.0.0). Change: ratio is rounded half away from zero,
+-- floor(x*100 + 0.5)/100 instead of round(x, 2), whose Float64 rounding is half to even.
+-- See part1-tpcds/queries/CHANGES.md.
 --
 -- Legal Notice 
 -- 
@@ -75,7 +78,7 @@ ss as
    )
 [_LIMITA] select [_LIMITB]
 [SELECTONE],
-round(CAST(ss_qty AS Decimal(18,6))/(coalesce(ws_qty,0)+coalesce(cs_qty,0)),2) ratio,
+floor(ss_qty/(coalesce(ws_qty,0)+coalesce(cs_qty,0))*100 + 0.5)/100 ratio,
 ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
 coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
 coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
