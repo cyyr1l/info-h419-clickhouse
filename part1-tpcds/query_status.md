@@ -11,7 +11,7 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q5 | ① | OK | pending |  |
 | Q6 | ① | OK | pending |  |
 | Q7 | ① | OK | pending |  |
-| Q8 | ① | OK | pending | **Empty result at SF 1** (q08): weak check, validate with official parameters |
+| Q8 | ① | OK | pending | **Empty result at SF 1** (q08): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
 | Q9 | ① | OK | pending |  |
 | Q10 | ① | OK | pending |  |
 | Q11 | ① | OK | pending |  |
@@ -26,13 +26,13 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q20 | ① | OK | pending |  |
 | Q21 | ① | OK | pending |  |
 | Q22 | ① | OK | pending |  |
-| Q23 | ① | OK | pending | 2 statements; **Empty result at SF 1** (q23_2): weak check, validate with official parameters |
-| Q24 | ① | OK | pending | 2 statements; **Empty result at SF 1** (q24_1, q24_2): weak check, validate with official parameters |
-| Q25 | ① | OK | pending | **Empty result at SF 1** (q25): weak check, validate with official parameters |
+| Q23 | ① | OK | pending | 2 statements; **Empty result at SF 1** (q23_2): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
+| Q24 | ① | OK | pending | 2 statements; **Empty result at SF 1** (q24_1, q24_2): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
+| Q25 | ① | OK | pending | **Empty result at SF 1** (q25): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
 | Q26 | ② | OK | pending |  |
 | Q27 | ② | OK | pending |  |
 | Q28 | ② | OK | pending |  |
-| Q29 | ② | OK | pending | **Empty result at SF 1** (q29): weak check, validate with official parameters |
+| Q29 | ② | OK | pending | **Empty result at SF 1** (q29): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
 | Q30 | ② | OK | pending | Reference needed a fix (see CHANGES.md) |
 | Q31 | ② | OK | pending |  |
 | Q32 | ② | OK | pending |  |
@@ -40,11 +40,11 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q34 | ② | OK | pending |  |
 | Q35 | ② | OK | pending |  |
 | Q36 | ② | OK | pending |  |
-| Q37 | ② | OK | pending | **Empty result at SF 1** (q37): weak check, validate with official parameters |
+| Q37 | ② | OK | pending | **Empty result at SF 1** (q37): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
 | Q38 | ② | OK | pending |  |
 | Q39 | ② | OK | pending | 2 statements |
 | Q40 | ② | OK | pending |  |
-| Q41 | ② | OK | pending | **Empty result at SF 1** (q41): weak check, validate with official parameters |
+| Q41 | ② | OK | pending | **Empty result at SF 1** (q41): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
 | Q42 | ② | OK | pending |  |
 | Q43 | ② | OK | pending |  |
 | Q44 | ② | OK | pending |  |
@@ -57,11 +57,11 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q51 | ③ | OK | pending |  |
 | Q52 | ③ | OK | pending |  |
 | Q53 | ③ | OK | pending |  |
-| Q54 | ③ | OK | pending | **Empty result at SF 1** (q54): weak check, validate with official parameters |
+| Q54 | ③ | OK | pending | **Empty result at SF 1** (q54): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
 | Q55 | ③ | OK | pending |  |
 | Q56 | ③ | OK | pending |  |
 | Q57 | ③ | OK | pending | Explicit v2 aliases prepared; synthetic comparison passed; SF1 pending. |
-| Q58 | ③ | OK | pending | **Empty result at SF 1** (q58): weak check, validate with official parameters. Qualified ordering fix prepared; non-empty synthetic comparison passed; SF1 pending. |
+| Q58 | ③ | OK | pending | **Empty result at SF 1** (q58): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets). Qualified ordering fix prepared; non-empty synthetic comparison passed; SF1 pending. |
 | Q59 | ③ | OK | pending |  |
 | Q60 | ③ | OK | pending |  |
 | Q61 | ③ | OK | pending |  |
@@ -81,7 +81,7 @@ Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `querie
 | Q75 | ③ | OK | pending | Decimal-compatible COALESCE defaults prepared; synthetic comparison passed; SF1 pending. |
 | Q76 | ④ | OK | pending |  |
 | Q77 | ④ | OK | pending | Reference needed a fix (see CHANGES.md) |
-| Q78 | ④ | OK | pending |  |
+| Q78 | ④ | OK | pending | Template fixed: the ratio is rounded half away from zero, as in the reference (see CHANGES.md). |
 | Q79 | ④ | OK | pending |  |
 | Q80 | ④ | OK | pending |  |
 | Q81 | ④ | OK | pending |  |
