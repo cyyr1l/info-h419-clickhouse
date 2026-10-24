@@ -1,6 +1,6 @@
 # 6. Benchmark methodology (draft)
 
-**Status:** draft of 18 Oct, derived from [`docs/benchmark-protocol.md`](../../docs/benchmark-protocol.md), open for comments. To be pasted into the Part I report (Google Docs). Section numbers follow the Part I report outline in `docs/ROADMAP.md` · **Owner:** ② Benchmark & Measurement
+**Status:** draft of 18 Oct, revised with ④'s review (issue #5), derived from [`docs/benchmark-protocol.md`](../../docs/benchmark-protocol.md), open for comments. To be pasted into the Part I report (Google Docs). Section numbers follow the Part I report outline in `docs/ROADMAP.md` · **Owner:** ② Benchmark & Measurement
 
 This section describes how we measure: the tests run at each scale factor, the definition of every time we report, the controls that keep the runs comparable, the data we record and the metric. The machine, the software versions, the settings profile and the choice of scale factors are described in Section 4; query generation, query changes and the validation of results in Section 5. Our results are derived from TPC-DS v4.0.0 (Clause 7, "Performance Metrics and Execution Rules") and are not official TPC results. Section 6.9 lists every deviation from the specification.
 
@@ -41,7 +41,7 @@ The specification runs each test once. A single measurement per query cannot sep
 - **One cold run.** The harness stops the ClickHouse container, drops the Linux page cache of the WSL2 virtual machine, starts the container again and waits until the server answers queries. Restarting the server empties all its in-memory caches (mark cache, primary index, …). The page cache is dropped from a privileged container, which shares the kernel of the WSL2 virtual machine.
 - **Three warm runs**, immediately after the cold run, without restarting the server.
 
-For each query, we report the median of the three warm runs with their minimum and maximum, and the cold run separately. One limitation remains: Windows may keep parts of the WSL2 virtual disk file in its own cache, which cannot be cleared from inside WSL2, so a cold run may be slightly warmer than a cold start of the whole machine.
+For each query, we report the median of the three warm runs with their minimum and maximum and the relative spread (max − min) / median, and the cold run separately. For very short queries, the client time is dominated by the HTTP round trip, so we also report the server-side duration recorded in `system.query_log` (Section 6.7). One limitation remains: Windows may keep parts of the WSL2 virtual disk file in its own cache, which cannot be cleared from inside WSL2, so a cold run may be slightly warmer than a cold start of the whole machine.
 
 ## 6.6 Controls
 
@@ -55,9 +55,9 @@ For each query, we report the median of the three warm runs with their minimum a
 
 **Timeout and memory.** Each query may run for at most 1,800 s (`max_execution_time`, with `timeout_overflow_mode = 'throw'`). The reference scale factor is chosen so that a whole power run takes less than one hour (Section 4), and a single 30-minute query would already use half of that budget. Under four concurrent streams, a heavy query can take up to about four times longer than alone, so this limit only stops runaway queries. Memory limits are left at the ClickHouse defaults: the server may use 90 % of the memory visible to WSL2, adjusted dynamically.
 
-**Failures are results.** Every statement receives a status: `ok`, `timeout` (ClickHouse error codes 159 and 160, or no answer within the time limit plus 60 s), `memory` (code 241) or `error` (any other code). A failed statement is recorded with its error code and message, and the stream continues with the next query. A run with any failure does not comply with §7.4.1.1; we report such failures in Section 7 rather than hide them.
+**Failures are results.** Every statement receives a status: `ok`, `timeout` (ClickHouse error codes 159 and 160, or no answer within the time limit plus 60 s), `memory` (code 241) or `error` (any other code). A failed statement is recorded with its error code and message, and the stream continues with the next query. A run with any failure does not comply with §7.4.1.1; we report such failures in Section 7 rather than hide them. In the analysis, failed and timed-out statements are excluded from the medians and listed in a table of their own, and the scaling curves only use the queries that succeed at all four scale factors.
 
-**Correctness before speed.** No timed run starts before all 99 queries have been validated at SF 1 against reference answers computed with DuckDB from the same SQL text (Section 5). A timing is only meaningful for a query whose result is correct.
+**Correctness before speed.** No timed run starts before all 99 queries have been validated at SF 1 against reference answers computed with DuckDB from the same SQL text (Section 5). A timing is only meaningful for a query whose result is correct. The validation set uses the default `dsqgen` seed at SF 1, whereas the measured streams use our fixed seed at every scale factor: validation therefore checks the logic of each query and of our ClickHouse changes, not every result produced during the measured runs. As a cheap check at the larger scale factors, a query must return the same number of rows in every run of stream 0 (the power test and the cold and warm runs), and the queries that return no rows in the measured streams are flagged.
 
 ## 6.7 Data collected
 
@@ -88,6 +88,14 @@ $$
 $$
 
 This simplified metric is our own. It is not a QphDS value and cannot be compared with published TPC-DS results.
+
+To compare the power and throughput tests directly, we also report the concurrency efficiency
+
+$$
+E = \frac{S_q \cdot T_{Power}}{T_{TT1}}
+$$
+
+$E = S_q = 4$ would mean that the four streams overlap perfectly, each running as fast as it does alone; $E = 1$ means that running them concurrently brings no gain over running them one after the other. Streams 1 to 4 use other parameter values than stream 0, so $E$ is an approximation.
 
 ## 6.9 Deviations from the specification
 
