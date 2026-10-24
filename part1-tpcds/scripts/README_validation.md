@@ -73,11 +73,39 @@ exactly the same SQL text. To check the DuckDB setup itself, Q96 and Q3 were run
 qualification values (Q96: `t_hour = 20`, `hd_dep_count = 7`; Q3: `i_manufact_id = 128`, `d_moy = 11`)
 and both match `answer_sets/` exactly (Q96 = 870).
 
-## Known limitation: 10 empty reference results
+## Empty reference results: checked with the official parameters
 
-With these parameters, 10 results are empty at SF 1: `q08`, `q23_2`, `q24_1`, `q24_2`, `q25`, `q29`,
-`q37`, `q41`, `q54`, `q58`. An empty result is a weak check: a broken ClickHouse query that also returns
-nothing would still pass, which is why `compare.py` reports them as `OK (both empty)`. Other seeds
-(`-RNGSEED`) give 8–11 empty results, so changing the seed does not solve it. With the official
-qualification parameters these queries do return rows, so the plan is to validate them separately with
-those values (spec, qualification parameters).
+With our parameters (default seed), 10 results are empty at SF 1: `q08`, `q23_2`, `q24_1`, `q24_2`, `q25`,
+`q29`, `q37`, `q41`, `q54`, `q58`. An empty result is a weak check: a broken ClickHouse query that also
+returns nothing would still pass, which is why `compare.py` reports them as `OK (both empty)`. Other seeds
+(`-RNGSEED`) give 8–11 empty results, so changing the seed does not solve it.
+
+So these 9 templates are also run with the official qualification parameters (spec 4.0.0, Appendix B),
+with which they return rows:
+
+| Path | Content |
+|---|---|
+| `scripts/gen_qualify.py` | Writes the qualification values into copies of the 9 templates and runs dsqgen in Docker. Output: `queries/qualify/` and `data/queries/qualify/`. |
+| `queries/qualify/qNN.sql` | The 9 queries with the qualification parameters (netezza dialect, kit templates): the source of the answers below. Never edit these. |
+| `data/queries/qualify/qNN.sql` | The same 9 queries for ClickHouse (clickhouse dialect, our templates, `INTERVAL` rewrite). Not in git. |
+| `reference/sf1_qualify/*.csv` | DuckDB answers for these 9 queries at SF 1 (11 files: Q23 and Q24 have two parts). |
+
+**Check against the official answers.** All 11 files match the kit's `answer_sets/` (`8`, `23_NULLS_LAST`,
+`24`, `25`, `29`, `37`, `41`, `54`, `58`): same rows and same values (`8.ans` shows the sums rounded).
+Q23 part 2 has a NULL last name, sorted last, hence `23_NULLS_LAST.ans`. For Q29 the spec gives
+`MONTH = 9`, although the kit template draws the month with `random(4,4,uniform)`; `29.ans` matches `MONTH = 9`.
+
+Only the parameter values differ from `queries/original/`. The rest of each query is unchanged.
+
+To validate them on ClickHouse (SF 1 loaded):
+```bash
+python3 part1-tpcds/scripts/gen_qualify.py
+python3 part1-tpcds/scripts/harness.py validate --sf 1 --queries data/queries/qualify --out data/validation/sf1_qualify
+python3 part1-tpcds/scripts/compare.py part1-tpcds/reference/sf1_qualify data/validation/sf1_qualify
+```
+
+To rebuild the answers:
+```bash
+python3 part1-tpcds/scripts/build_reference.py data/tpcds/sf1 part1-tpcds/queries/qualify \
+        part1-tpcds/reference/sf1_qualify tools/DSGen-software-code-4.0.0/tools/tpcds.sql
+```
