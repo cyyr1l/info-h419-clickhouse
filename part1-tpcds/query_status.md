@@ -2,104 +2,106 @@
 
 Status: `pending` / `OK` / `OK (fixed)` / `failing`. Fixes are logged in `queries/CHANGES.md`.
 
+ClickHouse column: SF 1 generated with `gen_data.py` and loaded with `load.py`, queries from `gen_queries.py validation` (and `gen_qualify.py` for the 9 queries whose reference result is empty), run with `harness.py validate` and compared with `compare.py` (24/10, on the benchmark machine).
+
 | Query | Owner | Reference (DuckDB) | ClickHouse | Notes |
 |---|---|---|---|---|
-| Q1 | ① | OK | pending |  |
-| Q2 | ① | OK | pending |  |
-| Q3 | ① | OK | pending |  |
-| Q4 | ① | OK | pending |  |
-| Q5 | ① | OK | pending |  |
-| Q6 | ① | OK | pending |  |
-| Q7 | ① | OK | pending |  |
-| Q8 | ① | OK | pending | **Empty result at SF 1** (q08): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q9 | ① | OK | pending |  |
-| Q10 | ① | OK | pending |  |
-| Q11 | ① | OK | pending |  |
-| Q12 | ① | OK | pending |  |
-| Q13 | ① | OK | pending |  |
-| Q14 | ① | OK | pending | 2 statements |
-| Q15 | ① | OK | pending |  |
-| Q16 | ① | OK | pending |  |
-| Q17 | ① | OK | pending | ③: NULL/sample-size fix prepared; synthetic comparison passed; SF1 pending. |
-| Q18 | ① | OK | pending |  |
-| Q19 | ① | OK | pending |  |
-| Q20 | ① | OK | pending |  |
-| Q21 | ① | OK | pending |  |
-| Q22 | ① | OK | pending |  |
-| Q23 | ① | OK | pending | 2 statements; **Empty result at SF 1** (q23_2): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q24 | ① | OK | pending | 2 statements; **Empty result at SF 1** (q24_1, q24_2): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q25 | ① | OK | pending | **Empty result at SF 1** (q25): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q26 | ② | OK | pending |  |
-| Q27 | ② | OK | pending |  |
-| Q28 | ② | OK | pending |  |
-| Q29 | ② | OK | pending | **Empty result at SF 1** (q29): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q30 | ② | OK | pending | Reference needed a fix (see CHANGES.md) |
-| Q31 | ② | OK | pending |  |
-| Q32 | ② | OK | pending |  |
-| Q33 | ② | OK | pending |  |
-| Q34 | ② | OK | pending |  |
-| Q35 | ② | OK | pending |  |
-| Q36 | ② | OK | pending |  |
-| Q37 | ② | OK | pending | **Empty result at SF 1** (q37): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q38 | ② | OK | pending |  |
-| Q39 | ② | OK | pending | 2 statements |
-| Q40 | ② | OK | pending |  |
-| Q41 | ② | OK | pending | **Empty result at SF 1** (q41): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q42 | ② | OK | pending |  |
-| Q43 | ② | OK | pending |  |
-| Q44 | ② | OK | pending |  |
-| Q45 | ② | OK | pending |  |
-| Q46 | ② | OK | pending |  |
-| Q47 | ② | OK | pending |  |
-| Q48 | ② | OK | pending |  |
-| Q49 | ② | OK | pending |  |
-| Q50 | ② | OK | pending |  |
-| Q51 | ③ | OK | pending |  |
-| Q52 | ③ | OK | pending |  |
-| Q53 | ③ | OK | pending |  |
-| Q54 | ③ | OK | pending | **Empty result at SF 1** (q54): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets) |
-| Q55 | ③ | OK | pending |  |
-| Q56 | ③ | OK | pending |  |
-| Q57 | ③ | OK | pending | Explicit v2 aliases prepared; synthetic comparison passed; SF1 pending. |
-| Q58 | ③ | OK | pending | **Empty result at SF 1** (q58): weak check. Checked with the official parameters instead (reference/sf1_qualify, matches answer_sets). Qualified ordering fix prepared; non-empty synthetic comparison passed; SF1 pending. |
-| Q59 | ③ | OK | pending |  |
-| Q60 | ③ | OK | pending |  |
-| Q61 | ③ | OK | pending |  |
-| Q62 | ③ | OK | pending |  |
-| Q63 | ③ | OK | pending |  |
-| Q64 | ③ | OK | pending |  |
-| Q65 | ③ | OK | pending |  |
-| Q66 | ③ | OK | pending | Qualified aggregate inputs prepared; synthetic comparison passed; SF1 pending. |
-| Q67 | ③ | OK | pending |  |
-| Q68 | ③ | OK | pending |  |
-| Q69 | ③ | OK | pending |  |
-| Q70 | ③ | OK | pending |  |
-| Q71 | ③ | OK | pending |  |
-| Q72 | ③ | OK | pending |  |
-| Q73 | ③ | OK | pending |  |
-| Q74 | ③ | OK | pending |  |
-| Q75 | ③ | OK | pending | Decimal-compatible COALESCE defaults prepared; synthetic comparison passed; SF1 pending. |
-| Q76 | ④ | OK | pending |  |
-| Q77 | ④ | OK | pending | Reference needed a fix (see CHANGES.md) |
-| Q78 | ④ | OK | pending | Template fixed: the ratio is rounded half away from zero, as in the reference (see CHANGES.md). |
-| Q79 | ④ | OK | pending |  |
-| Q80 | ④ | OK | pending |  |
-| Q81 | ④ | OK | pending |  |
-| Q82 | ④ | OK | pending |  |
-| Q83 | ④ | OK | pending |  |
-| Q84 | ④ | OK | pending |  |
-| Q85 | ④ | OK | pending |  |
-| Q86 | ④ | OK | pending |  |
-| Q87 | ④ | OK | pending |  |
-| Q88 | ④ | OK | pending |  |
-| Q89 | ④ | OK | pending |  |
-| Q90 | ④ | OK | pending | Reference needed a fix (see CHANGES.md) |
-| Q91 | ④ | OK | pending |  |
-| Q92 | ④ | OK | pending |  |
-| Q93 | ④ | OK | pending |  |
-| Q94 | ④ | OK | pending |  |
-| Q95 | ④ | OK | pending |  |
-| Q96 | ④ | OK | pending |  |
-| Q97 | ④ | OK | pending |  |
-| Q98 | ④ | OK | pending |  |
-| Q99 | ④ | OK | pending |  |
+| Q1 | ① | OK | OK (fixed) | Template fixed: lowercase column names (CHANGES.md). |
+| Q2 | ① | OK | OK |  |
+| Q3 | ① | OK | OK |  |
+| Q4 | ① | OK | OK |  |
+| Q5 | ① | OK | OK |  |
+| Q6 | ① | OK | OK |  |
+| Q7 | ① | OK | OK |  |
+| Q8 | ① | OK | OK | **Empty result at SF 1** (q08): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q9 | ① | OK | OK |  |
+| Q10 | ① | OK | OK |  |
+| Q11 | ① | OK | OK |  |
+| Q12 | ① | OK | OK |  |
+| Q13 | ① | OK | OK |  |
+| Q14 | ① | OK | OK | 2 statements |
+| Q15 | ① | OK | OK |  |
+| Q16 | ① | OK | OK |  |
+| Q17 | ① | OK | OK (fixed) | Template fixed by ③: stddev_samp gives NULL instead of nan for fewer than 2 values (CHANGES.md). |
+| Q18 | ① | OK | OK |  |
+| Q19 | ① | OK | OK |  |
+| Q20 | ① | OK | OK |  |
+| Q21 | ① | OK | OK |  |
+| Q22 | ① | OK | OK |  |
+| Q23 | ① | OK | OK | 2 statements; **Empty result at SF 1** (q23_2): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q24 | ① | OK | OK | 2 statements; **Empty result at SF 1** (q24_1, q24_2): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q25 | ① | OK | OK | **Empty result at SF 1** (q25): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q26 | ② | OK | OK |  |
+| Q27 | ② | OK | OK |  |
+| Q28 | ② | OK | OK |  |
+| Q29 | ② | OK | OK | **Empty result at SF 1** (q29): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q30 | ② | OK | OK (fixed) | Reference needed a fix (see CHANGES.md); the ClickHouse template has the same fix. |
+| Q31 | ② | OK | OK | Same rows in another order (ties in the ORDER BY). |
+| Q32 | ② | OK | OK |  |
+| Q33 | ② | OK | OK |  |
+| Q34 | ② | OK | OK |  |
+| Q35 | ② | OK | OK (fixed) | Template fixed: correlated EXISTS → IN (CHANGES.md). |
+| Q36 | ② | OK | OK |  |
+| Q37 | ② | OK | OK | **Empty result at SF 1** (q37): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q38 | ② | OK | OK |  |
+| Q39 | ② | OK | OK | 2 statements |
+| Q40 | ② | OK | OK |  |
+| Q41 | ② | OK | OK | **Empty result at SF 1** (q41): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q42 | ② | OK | OK |  |
+| Q43 | ② | OK | OK |  |
+| Q44 | ② | OK | OK |  |
+| Q45 | ② | OK | OK |  |
+| Q46 | ② | OK | OK |  |
+| Q47 | ② | OK | OK (fixed) | Template fixed: explicit column aliases (CHANGES.md). |
+| Q48 | ② | OK | OK |  |
+| Q49 | ② | OK | OK |  |
+| Q50 | ② | OK | OK |  |
+| Q51 | ③ | OK | OK |  |
+| Q52 | ③ | OK | OK |  |
+| Q53 | ③ | OK | OK |  |
+| Q54 | ③ | OK | OK | **Empty result at SF 1** (q54): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q55 | ③ | OK | OK |  |
+| Q56 | ③ | OK | OK |  |
+| Q57 | ③ | OK | OK (fixed) | Template fixed by ③: explicit column aliases, as for Q47 (CHANGES.md). |
+| Q58 | ③ | OK | OK (fixed) | Template fixed by ③: qualified ORDER BY key (CHANGES.md). **Empty result at SF 1** (q58): weak check. With the official parameters, reference/sf1_qualify matches answer_sets and ClickHouse matches reference/sf1_qualify. |
+| Q59 | ③ | OK | OK |  |
+| Q60 | ③ | OK | OK |  |
+| Q61 | ③ | OK | OK |  |
+| Q62 | ③ | OK | OK |  |
+| Q63 | ③ | OK | OK |  |
+| Q64 | ③ | OK | OK |  |
+| Q65 | ③ | OK | OK |  |
+| Q66 | ③ | OK | OK (fixed) | Template fixed by ③: qualified aggregate inputs (CHANGES.md). |
+| Q67 | ③ | OK | OK |  |
+| Q68 | ③ | OK | OK |  |
+| Q69 | ③ | OK | OK |  |
+| Q70 | ③ | OK | OK |  |
+| Q71 | ③ | OK | OK | Same rows in another order (ties in the ORDER BY). |
+| Q72 | ③ | OK | OK |  |
+| Q73 | ③ | OK | OK |  |
+| Q74 | ③ | OK | OK |  |
+| Q75 | ③ | OK | OK (fixed) | Template fixed by ③: integer COALESCE defaults (CHANGES.md). |
+| Q76 | ④ | OK | OK |  |
+| Q77 | ④ | OK | OK | Reference needed a fix (see CHANGES.md) |
+| Q78 | ④ | OK | OK (fixed) | Template fixed: the ratio is rounded half away from zero, as in the reference (CHANGES.md). |
+| Q79 | ④ | OK | OK |  |
+| Q80 | ④ | OK | OK |  |
+| Q81 | ④ | OK | OK |  |
+| Q82 | ④ | OK | OK |  |
+| Q83 | ④ | OK | OK |  |
+| Q84 | ④ | OK | OK |  |
+| Q85 | ④ | OK | OK |  |
+| Q86 | ④ | OK | OK |  |
+| Q87 | ④ | OK | OK |  |
+| Q88 | ④ | OK | OK |  |
+| Q89 | ④ | OK | OK |  |
+| Q90 | ④ | OK | OK | Reference needed a fix (see CHANGES.md) |
+| Q91 | ④ | OK | OK |  |
+| Q92 | ④ | OK | OK |  |
+| Q93 | ④ | OK | OK |  |
+| Q94 | ④ | OK | OK |  |
+| Q95 | ④ | OK | OK |  |
+| Q96 | ④ | OK | OK |  |
+| Q97 | ④ | OK | OK |  |
+| Q98 | ④ | OK | OK |  |
+| Q99 | ④ | OK | OK |  |
