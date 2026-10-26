@@ -1,0 +1,66 @@
+{
+  "run_id": "20261026-201622",
+  "sf": 30.0,
+  "load": {
+    "t_load_s": 423.687,
+    "load_s": 176.041,
+    "optimize_s": 247.646,
+    "tables": 24,
+    "rows": 200439194
+  },
+  "power": [
+    {
+      "repeat": 1,
+      "stream": 0,
+      "t_power_s": 342.009,
+      "queries": 99,
+      "failures": 0
+    }
+  ],
+  "throughput": [
+    {
+      "t_tt1_s": 1053.476,
+      "streams": 4,
+      "failures": 2,
+      "per_stream_s": {
+        "1": 1030.116,
+        "2": 1053.475,
+        "3": 819.421,
+        "4": 836.184
+      }
+    }
+  ],
+  "power_cold": [
+    {
+      "repeat": 1,
+      "stream": 0,
+      "t_power_s": 314.547,
+      "queries": 99,
+      "failures": 0
+    }
+  ],
+  "power_warm": [
+    {
+      "repeat": 1,
+      "stream": 0,
+      "t_power_s": 302.075,
+      "queries": 99,
+      "failures": 0
+    },
+    {
+      "repeat": 2,
+      "stream": 0,
+      "t_power_s": 306.239,
+      "queries": 99,
+      "failures": 0
+    },
+    {
+      "repeat": 3,
+      "stream": 0,
+      "t_power_s": 295.032,
+      "queries": 99,
+      "failures": 0
+    }
+  ],
+  "simplified_metric": 147404
+}
