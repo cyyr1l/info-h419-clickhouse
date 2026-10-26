@@ -40,6 +40,7 @@ Some things are clearer as numbers than as charts, so they go in tables and in t
 | `tables/summary_by_sf.csv` | T_Load, T_Power, T_TT1, concurrency efficiency, failed executions, size on disk and compression per SF |
 | `tables/per_query.csv` | per SF and query: power, cold, warm median/min/max, spread, server time, peak memory, failures |
 | `tables/failures.csv` | every failed or timed-out execution |
+| `tables/row_checks.csv` | row-count checks of the methodology (6.6): statements whose `result_rows` differ between the runs of stream 0 (power, cold, warm), and statements returning 0 rows in a measured stream. Empty = all checks passed |
 
 The script also prints the numbers to quote in the text (slowest queries and their share of the total,
 spread of the warm runs, queries that grow faster than the data, size and compression).
@@ -67,6 +68,8 @@ of blue differ in lightness, so the charts also work printed in black and white.
   used, and the chart title says so.
 - Scaling charts only use queries that are `ok` at every SF.
 - Spread of the warm runs = (max − min) / median.
+- Row counts (methodology 6.6): only stream 0 is compared between runs, since the throughput streams use
+  other parameters; a 0-row result is flagged in any measured stream.
 - Concurrency efficiency = Sq × T_Power / T_TT1: 1 = no gain from running streams in parallel,
   Sq = perfect overlap.
 - "Grows faster than the data" = more than 20% above linear growth between the smallest and the largest SF.

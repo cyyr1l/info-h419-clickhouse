@@ -26,7 +26,8 @@ Figures (--out, default report/part1/figures), one question each:
   cold_warm_sf<REF>.png    dumbbell      how much faster are the slowest queries with the data in memory?
 Every title states the conclusion; axes are in plain seconds (no log scales).
 Tables (--out/tables): summary_by_sf.csv (with size on disk and compression), per_query.csv,
-failures.csv. Size, failures and run-to-run spread go in tables and text, not in charts.
+failures.csv, row_checks.csv (methodology 6.6: same row count in every run of stream 0; 0-row
+statements flagged). Size, failures and run-to-run spread go in tables and text, not in charts.
 """
 import argparse
 import json
@@ -125,7 +126,7 @@ def load_runs(runs):
             loads.append(df)
         summaries[sf] = json.loads((d / "summary.json").read_text()) if (d / "summary.json").exists() else {}
     stmts = pd.concat(stmts, ignore_index=True)
-    stmts["error"] = stmts["error"].fillna("").astype(str)
+    stmts["error"] = stmts["error"].astype(object).fillna("").astype(str)
     return stmts, (pd.concat(loads, ignore_index=True) if loads else None), summaries
 
 
@@ -184,6 +185,28 @@ def summary_table(runs, summaries, ex, sq_default=4):
                      "metric": (s.get("simplified_metric") or {}).get("value")
                      if isinstance(s.get("simplified_metric"), dict) else s.get("simplified_metric")})
     return pd.DataFrame(rows)
+
+
+def row_checks(stmts):
+    """Row-count checks of the methodology (section 6.6), per SQL statement, ok executions only:
+    - rows_differ: stream 0 (power, cold and warm runs) must return the same result_rows in every
+      run; the throughput streams use other parameters, so they are not compared;
+    - zero_rows: a statement that returns 0 rows in a measured stream is flagged.
+    Returns one row per flagged (sf, query, part)."""
+    ok = stmts[stmts.status == "ok"].dropna(subset=["result_rows"])
+    out = []
+    s0 = ok[ok.stream == 0].groupby(["sf", "query", "part"]).result_rows
+    diff = s0.agg(["min", "max", "count"])
+    for (sf, q, part), r in diff[diff["min"] != diff["max"]].iterrows():
+        out.append({"sf": sf, "query": q, "part": part, "issue": "rows_differ",
+                    "detail": f"stream 0: {int(r['min'])} to {int(r['max'])} rows over {int(r['count'])} runs"})
+    zero = ok[ok.result_rows == 0].groupby(["sf", "query", "part"])
+    for (sf, q, part), g in zero:
+        where = ", ".join(sorted({f"{t} s{int(s)}" for t, s in zip(g.test, g.stream)}))
+        out.append({"sf": sf, "query": q, "part": part, "issue": "zero_rows", "detail": f"0 rows in {where}"})
+    cols = ["sf", "query", "part", "issue", "detail"]
+    return pd.DataFrame(out, columns=cols).sort_values(["issue", "sf", "query", "part"]) if out \
+        else pd.DataFrame(columns=cols)
 
 
 # ---------------------------------------------------------------- figures
@@ -423,7 +446,9 @@ def main(argv=None):
     summary.to_csv(out / "tables" / "summary_by_sf.csv", index=False)
     pq.to_csv(out / "tables" / "per_query.csv", index=False, float_format="%.4f")
     fails.to_csv(out / "tables" / "failures.csv", index=False)
-    print(f"tables: {out / 'tables'} (summary_by_sf, per_query, failures)")
+    checks = row_checks(stmts)
+    checks.to_csv(out / "tables" / "row_checks.csv", index=False)
+    print(f"tables: {out / 'tables'} (summary_by_sf, per_query, failures, row_checks)")
 
     # numbers to quote in the text
     r = pq[pq.sf == ref]
@@ -443,6 +468,9 @@ def main(argv=None):
     if loads is not None:
         print("size on disk: " + ", ".join(f"{sf_label(a)} {b:.1f} GiB (x{c:.1f} compression)" for a, b, c in
                                            zip(summary.sf, summary.size_on_disk_gib, summary.compression_ratio)))
+    n_diff, n_zero = (checks.issue == "rows_differ").sum(), (checks.issue == "zero_rows").sum()
+    print(f"row checks (methodology 6.6): {n_diff} statements with different row counts in stream 0, "
+          f"{n_zero} returning 0 rows" + (" -> see tables/row_checks.csv" if len(checks) else ""))
     print(summary.to_string(index=False))
 
 
