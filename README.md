@@ -84,8 +84,7 @@ The scripts build `dsdgen` and `dsqgen` from this folder in a Docker image the f
 
 ```bash
 mkdir -p data                     # before the first start, otherwise Docker creates data/ as root
-docker compose -f docker/docker-compose.yml up -d
-docker compose -f docker/docker-compose.yml ps     # infoh419-clickhouse must be "healthy"
+docker compose -f docker/docker-compose.yml up -d --wait     # returns once the server is "healthy"
 docker compose -f docker/docker-compose.yml exec clickhouse clickhouse-client --password infoh419 --query "SELECT version()"
 ```
 
@@ -232,7 +231,7 @@ The tests that need ClickHouse are skipped when no server answers on `localhost:
 | Symptom | Cause and fix |
 |---|---|
 | `docker compose build tpcds-kit failed` | The TPC-DS tools are not in `tools/DSGen-software-code-4.0.0/` (step 1). |
-| `cannot reach ClickHouse at http://localhost:8123/` | ClickHouse is not running: `docker compose -f docker/docker-compose.yml up -d`. |
+| `cannot reach ClickHouse at http://localhost:8123/` | ClickHouse is not running: `docker compose -f docker/docker-compose.yml up -d --wait`. |
 | `load.py` finds no files although `gen_data.py` succeeded | The ClickHouse container was created from another copy of the repository, so it mounts another `data/` folder. Recreate it: `docker compose -f docker/docker-compose.yml up -d --force-recreate clickhouse`. |
 | `manifest.json not found` | Run `gen_data.py --sf N` before `load.py --sf N`. |
 | `PermissionError` on `data/…` from `gen_data.py` | ClickHouse was started before `data/` existed, so Docker created it as root. Stop ClickHouse (`docker compose -f docker/docker-compose.yml stop`), delete the empty folder (`rmdir data`), then run step 2 again from `mkdir -p data`. |
