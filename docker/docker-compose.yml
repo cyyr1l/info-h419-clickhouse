@@ -20,7 +20,7 @@ services:
 
     # Only reachable from this machine (simple password, public Wi-Fi).
     ports:
-      - "127.0.0.1:8123:8123"   # HTTP interface (used by clickhouse-connect in Python)
+      - "127.0.0.1:8123:8123"   # HTTP interface (used by the Python scripts)
       - "127.0.0.1:9000:9000"   # native interface (used by clickhouse-client)
 
     environment:
