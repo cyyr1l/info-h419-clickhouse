@@ -5,11 +5,12 @@ For each query: EXPLAIN (plan with index usage), the join and aggregation steps 
 one run with the values ClickHouse records in system.query_log (time, rows and bytes read, peak
 memory). Uses the same settings profile as the harness (part1-tpcds/settings.json).
 
-  python3 part1-tpcds/analysis/explain_queries.py --sf 1                       # Q72 Q93 Q69 Q23 Q67
-  python3 part1-tpcds/analysis/explain_queries.py --sf 1 --only 72,93 --no-run   # plans only
+  python3 part1-tpcds/analysis/explain_queries.py --sf 50                       # Q72 Q93 Q69 Q23 Q67
+  python3 part1-tpcds/analysis/explain_queries.py --sf 50 --only 72,93 --no-run   # plans only
 
-Needs ClickHouse running, the SF loaded (load.py) and the ClickHouse queries
-(gen_queries.py validation -> data/queries/validation). Writes data/explain/sf<SF>/:
+Needs ClickHouse running, the SF loaded (load.py) and its query streams (gen_queries.py streams
+--sf <SF>). By default it runs stream 0, data/queries/sf<SF>/query_0.sql, i.e. the queries with the
+parameters measured in the power test. Writes data/explain/sf<SF>/:
   qNN_plan.txt   EXPLAIN indexes = 1 of each statement (how many parts/granules the primary key keeps)
   summary.csv    one row per statement: time, rows read, bytes read, peak memory, result rows,
                  number of joins, largest estimated join result (rows), tables read
@@ -32,7 +33,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--sf", type=float, default=1)
     p.add_argument("--only", help="templates, e.g. 72,93 (default: %s)" % ",".join(map(str, SLOWEST)))
-    p.add_argument("--queries", default=str(REPO / "data" / "queries" / "validation"))
+    p.add_argument("--queries", help="stream file or folder of qNN.sql (default: data/queries/sf<SF>/query_0.sql)")
     p.add_argument("--out", help="default: data/explain/sf<SF>")
     p.add_argument("--no-run", action="store_true", help="only EXPLAIN, do not run the queries")
     p.add_argument("--host", default="localhost")
@@ -48,10 +49,13 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     ch = ClickHouse(args.host, args.port, args.user, args.password, db, load_settings(args.settings), 3600)
 
-    queries = {q.template: q for q in load_queries([args.queries])}
+    source = args.queries or REPO / "data" / "queries" / f"sf{args.sf:g}" / "query_0.sql"
+    if not Path(source).exists():
+        sys.exit(f"{source} not found (run gen_queries.py streams --sf {args.sf:g} first)")
+    queries = {q.template: q for q in load_queries([source])}
     missing = [n for n in wanted if n not in queries]
     if missing:
-        sys.exit(f"not found in {args.queries}: {missing} (run gen_queries.py validation first)")
+        sys.exit(f"not found in {source}: {missing}")
 
     rows = []
     for n in wanted:

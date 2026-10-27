@@ -28,7 +28,7 @@ Figures (--out, default report/part1/figures), one question each:
   cold_warm_sf<REF>.png    bars (+/- %)  do the slowest queries run faster in the warm runs than in the cold run?
 Every title states the conclusion; axes are in plain seconds (no log scales).
 Tables (--out/tables): summary_by_sf.csv (with size on disk and compression), per_query.csv,
-failures.csv, row_checks.csv (methodology 6.6: same row count in every run of stream 0; 0-row
+failures.csv, row_checks.csv (report Section 6.5: same row count in every run of stream 0; 0-row
 statements flagged). Size, failures and run-to-run spread go in tables and text, not in charts.
 """
 import argparse
@@ -210,7 +210,7 @@ def summary_table(runs, summaries, ex, sq_default=4):
 
 
 def row_checks(stmts):
-    """Row-count checks of the methodology (section 6.6), per SQL statement, ok executions only:
+    """Row-count checks of the methodology (report Section 6.5), per SQL statement, ok executions only:
     - rows_differ: stream 0 (power, cold and warm runs) must return the same result_rows in every
       run; the throughput streams use other parameters, so they are not compared;
     - zero_rows: a statement that returns 0 rows in a measured stream is flagged.
@@ -551,7 +551,7 @@ def main(argv=None):
         print("size on disk: " + ", ".join(f"{sf_label(a)} {b:.1f} GiB (x{c:.1f} compression)" for a, b, c in
                                            zip(summary.sf, summary.size_on_disk_gib, summary.compression_ratio)))
     n_diff, n_zero = (checks.issue == "rows_differ").sum(), (checks.issue == "zero_rows").sum()
-    print(f"row checks (methodology 6.6): {n_diff} statements with different row counts in stream 0, "
+    print(f"row checks (report Section 6.5): {n_diff} statements with different row counts in stream 0, "
           f"{n_zero} returning 0 rows" + (" -> see tables/row_checks.csv" if len(checks) else ""))
     print(summary.to_string(index=False))
 
