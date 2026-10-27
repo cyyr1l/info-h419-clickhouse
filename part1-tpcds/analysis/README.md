@@ -19,13 +19,14 @@ By default it takes the latest run of every SF and uses the largest SF as the re
 |---|---|---|---|
 | `load_by_sf.png` | How long does the load take? | stacked bars per SF: INSERT + `OPTIMIZE FINAL` | few categories, two parts of one total |
 | `query_times_sf<REF>.png` | How long does each query take? | bars: the 15 slowest queries one by one + all the others together, with the share of the total | shows that a few queries take most of the time, and reads without knowing the topic |
-| `scaling_total.png` | Does the total time grow like the data? | line per SF, with the dashed line "if time grew exactly like the data" | the SF is continuous; the gap between the two lines is the answer |
-| `scaling_queries.png` | Which queries grow faster than the data? | bars: the 15 queries that grow the most, with the line "data ×10" | the queries past the line are the ones to explain in the Discussion |
-| `concurrency.png` | How much faster are the streams in parallel? | line of the speed-up per SF, with the references 1 (no gain) and Sq (best possible) | the message is one number per SF, so we draw that number |
-| `cold_warm_sf<REF>.png` | How much do the slowest queries gain with the data in memory? | dumbbell: cold and warm per query, label = % faster warm | the message is the difference, which the connecting line shows |
+| `scaling_total.png` | Does the total time grow like the data? | line per SF (in minutes), with the dashed line "if the time grew like the data" | the SF is continuous; the gap between the two lines is the answer |
+| `scaling_queries.png` | Which queries grow faster than the data? | bars: the 15 queries that grow the most, with the line "same growth as the data (×4.17)"; each label gives the factor and the two times (e.g. 0.97 s → 94.8 s) | the queries past the line are the ones to explain in the Discussion; the two times show whether a large factor matters (a factor on 0.02 s does not) |
+| `concurrency.png` | How much faster are the streams run at the same time than one after another? | grouped bars per SF, in minutes: the Sq streams one after another (estimated, Sq × T_Power) and at the same time (measured, T_TT1); the speed-up is written under each SF | two concrete times are easier to read than a ratio alone |
+| `cold_warm_sf<REF>.png` | Do the slowest queries run faster in the warm runs than in the cold run? | bars around 0: warm median compared with the cold run, in %, with the range of the warm runs as a line | the message is the difference, which is only a few %, so the difference itself is drawn |
 
-Every title states the conclusion, and all axes are in plain seconds (no log scales), so a reader who
-does not know the benchmark can still read them.
+Every title states the conclusion, and all axes are in plain seconds, minutes or % (no log scales), so a
+reader who does not know the benchmark can still read them. When a chart leaves something out or uses an
+estimate, a note under the chart says what and why.
 
 **Required vs additional.** Four charts cover what the project asks for: the three TPC-DS tests
 (load, power and throughput) and the scaling over the 4 SFs that the course page requires
@@ -50,9 +51,11 @@ A chart is skipped with a message when its input is missing (e.g. no throughput 
 
 Each color means the same thing in every figure:
 
-- **grey**: context (all the queries, reference lines, dashed);
-- **blue**: what the text talks about (the slowest queries, the queries that grow faster than the data), and *cold*;
-- **orange**: *warm* (blue/orange follows the cold/warm temperature metaphor);
+- **grey**: context and values that matter less (all the other queries, reference lines, dashed;
+  estimated times; queries under 1 s whose growth factor is large but adds little time);
+- **blue**: what the text talks about and measured values (the slowest queries, the queries that grow
+  faster than the data and take 1 s or more, the measured throughput time);
+- **orange**: *warm* runs (temperature metaphor);
 - **two shades of blue**: two phases of the same process (INSERT and OPTIMIZE);
 - **red**: failures only, always with an ✕ marker and a label, never color alone.
 
@@ -64,12 +67,16 @@ of blue differ in lightness, so the charts also work printed in black and white.
 - A query's time is the sum of its statements (Q14, Q23, Q24 and Q39 have two).
 - Failed or timed-out executions are left out of every time and median. They are listed in `failures.csv`
   and marked in the per-query chart.
-- Warm time = median of the 3 warm runs, with min–max whiskers. Without warm runs, the single power run is
-  used, and the chart title says so.
-- Scaling charts only use queries that are `ok` at every SF.
+- Warm time = median of the 3 warm runs (the min–max range is drawn in the cold/warm chart). Without warm
+  runs, the single power run is used, and the chart title says so.
+- Scaling charts only use queries that are `ok` at every SF, and leave out the queries that return 0 rows
+  in stream 0 at some SFs but not at others: an empty result is cheap to compute, so their times are not
+  comparable across SFs. The script prints them with their SFs, and a note under each scaling chart
+  names them. A query that returns 0 rows at every SF stays in, since it is compared with itself.
 - Spread of the warm runs = (max − min) / median.
 - Row counts (methodology 6.6): only stream 0 is compared between runs, since the throughput streams use
   other parameters; a 0-row result is flagged in any measured stream.
 - Concurrency efficiency = Sq × T_Power / T_TT1: 1 = no gain from running streams in parallel,
   Sq = perfect overlap.
 - "Grows faster than the data" = more than 20% above linear growth between the smallest and the largest SF.
+  In `scaling_queries.png`, blue = takes 1 s or more at the largest SF; grey = shorter.
