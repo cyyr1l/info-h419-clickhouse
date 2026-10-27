@@ -584,8 +584,10 @@ def cmd_validate(args):
         w = csv.DictWriter(f, fieldnames=["query", "status", "elapsed_s", "rows", "error"])
         w.writeheader()
         w.writerows(status)
+    # queries with the qualification parameters (gen_qualify.py) have their own reference answers
+    reference = "sf1_qualify" if any("qualify" in str(p) for p in args.queries) else "sf1"
     print(f"\n{sum(s['status'] == 'ok' for s in status)}/{len(status)} statements ran. Compare with:\n"
-          f"  python3 part1-tpcds/scripts/compare.py part1-tpcds/reference/sf1 {out}")
+          f"  python3 part1-tpcds/scripts/compare.py part1-tpcds/reference/{reference} {out}")
 
 
 def cmd_load(args):
