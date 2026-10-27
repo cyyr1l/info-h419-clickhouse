@@ -279,9 +279,9 @@ def fig_load(summary, out):
     fig, ax = plt.subplots(figsize=(4.8, 3.2))
     x = list(range(len(s)))
     ld, op = s.load_s.fillna(0) / 60, s.optimize_s.fillna(0) / 60
-    ax.bar(x, ld, width=0.55, color=BLUE_DARK, label="Load (INSERT)")
+    ax.bar(x, ld, width=0.55, color=BLUE_DARK, label="INSERT")
     ax.bar(x, op, width=0.55, bottom=ld, color=BLUE_LIGHT, edgecolor="white", linewidth=1.5,
-           label="OPTIMIZE FINAL")
+           label="OPTIMIZE TABLE ... FINAL")
     for i, v in zip(x, s.t_load_s):
         ax.text(i, v / 60, f"{v / 60:.1f} min", ha="center", va="bottom", color=INK2, fontsize=8)
     ax.set_xticks(x, [sf_label(v) for v in s.sf])
