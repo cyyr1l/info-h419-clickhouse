@@ -105,3 +105,13 @@ ClickHouse column: SF 1 generated with `gen_data.py` and loaded with `load.py`, 
 | Q97 | ④ | OK | OK |  |
 | Q98 | ④ | OK | OK |  |
 | Q99 | ④ | OK | OK |  |
+## Local validation by Anabelle — 25 October 2026
+
+Validated Q51–Q75 locally on ClickHouse 26.8.24.9 after generating
+and loading SF1 with gen_data.py and load.py.
+
+- All 25 queries matched the SF1 references using compare.py.
+- Q54 and Q58 returned empty results with the default parameters.
+- Both also matched the qualification references with the official
+parameters: Q54 returned 1 row and Q58 returned 3 rows.
+- No additional query fixes were needed.

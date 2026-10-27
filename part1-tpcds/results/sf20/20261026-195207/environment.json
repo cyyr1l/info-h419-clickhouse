@@ -1,0 +1,900 @@
+{
+  "captures": [
+    {
+      "test": "load",
+      "time": "2026-10-26T19:54:54",
+      "argv": [
+        "part1-tpcds/scripts/harness.py",
+        "campaign",
+        "--sf",
+        "20",
+        "--streams-dir",
+        "data/queries/sf20",
+        "--load-cmd",
+        "python3 part1-tpcds/scripts/load.py --sf 20"
+      ],
+      "host": {
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+        "logical_cpus": 16,
+        "memory_gib": 23.47,
+        "wsl": true,
+        "python": "3.12.3"
+      },
+      "docker": {
+        "server": "29.1.3",
+        "other_running_containers": []
+      },
+      "clickhouse": {
+        "version": "26.8.24.9",
+        "server_settings": {
+          "max_server_memory_usage": "20670991236",
+          "max_server_memory_usage_to_ram_ratio": "0.9",
+          "memory_worker_dynamic_hard_limit": "1"
+        },
+        "database": "tpcds_sf20",
+        "tables": [
+          {
+            "name": "call_center",
+            "total_rows": 6,
+            "total_bytes": 7710
+          },
+          {
+            "name": "catalog_page",
+            "total_rows": 11718,
+            "total_bytes": 698056
+          },
+          {
+            "name": "catalog_returns",
+            "total_rows": 2882133,
+            "total_bytes": 313588331
+          },
+          {
+            "name": "catalog_sales",
+            "total_rows": 28803583,
+            "total_bytes": 3743277880
+          },
+          {
+            "name": "customer",
+            "total_rows": 266000,
+            "total_bytes": 22971753
+          },
+          {
+            "name": "customer_address",
+            "total_rows": 133000,
+            "total_bytes": 7277239
+          },
+          {
+            "name": "customer_demographics",
+            "total_rows": 1920800,
+            "total_bytes": 9474780
+          },
+          {
+            "name": "date_dim",
+            "total_rows": 73049,
+            "total_bytes": 1730226
+          },
+          {
+            "name": "household_demographics",
+            "total_rows": 7200,
+            "total_bytes": 36872
+          },
+          {
+            "name": "income_band",
+            "total_rows": 20,
+            "total_bytes": 1540
+          },
+          {
+            "name": "inventory",
+            "total_rows": 18271305,
+            "total_bytes": 75068933
+          },
+          {
+            "name": "item",
+            "total_rows": 28000,
+            "total_bytes": 3952367
+          },
+          {
+            "name": "promotion",
+            "total_rows": 355,
+            "total_bytes": 30960
+          },
+          {
+            "name": "reason",
+            "total_rows": 75,
+            "total_bytes": 4032
+          },
+          {
+            "name": "ship_mode",
+            "total_rows": 20,
+            "total_bytes": 3015
+          },
+          {
+            "name": "store",
+            "total_rows": 44,
+            "total_bytes": 14451
+          },
+          {
+            "name": "store_returns",
+            "total_rows": 5755095,
+            "total_bytes": 488176047
+          },
+          {
+            "name": "store_sales",
+            "total_rows": 57598932,
+            "total_bytes": 4974315424
+          },
+          {
+            "name": "time_dim",
+            "total_rows": 86400,
+            "total_bytes": 1089310
+          },
+          {
+            "name": "warehouse",
+            "total_rows": 5,
+            "total_bytes": 3546
+          },
+          {
+            "name": "web_page",
+            "total_rows": 264,
+            "total_bytes": 15206
+          },
+          {
+            "name": "web_returns",
+            "total_rows": 1439266,
+            "total_bytes": 145114826
+          },
+          {
+            "name": "web_sales",
+            "total_rows": 14396103,
+            "total_bytes": 1893287866
+          },
+          {
+            "name": "web_site",
+            "total_rows": 28,
+            "total_bytes": 11620
+          }
+        ]
+      },
+      "settings_profile": {
+        "data_type_default_nullable": 1,
+        "join_use_nulls": 1,
+        "group_by_use_nulls": 1,
+        "union_default_mode": "DISTINCT",
+        "intersect_default_mode": "DISTINCT",
+        "except_default_mode": "DISTINCT",
+        "joined_subquery_requires_alias": 0,
+        "cast_keep_nullable": 1,
+        "use_query_cache": 0,
+        "use_query_condition_cache": 0,
+        "max_execution_time": 1800,
+        "timeout_overflow_mode": "throw"
+      },
+      "git": {
+        "commit": "97b42c4bdc51fc59e947ea9b92a28a8c51091022",
+        "branch": "main",
+        "dirty": true
+      },
+      "query_files": {}
+    },
+    {
+      "test": "power",
+      "time": "2026-10-26T19:54:55",
+      "argv": [
+        "part1-tpcds/scripts/harness.py",
+        "campaign",
+        "--sf",
+        "20",
+        "--streams-dir",
+        "data/queries/sf20",
+        "--load-cmd",
+        "python3 part1-tpcds/scripts/load.py --sf 20"
+      ],
+      "host": {
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+        "logical_cpus": 16,
+        "memory_gib": 23.47,
+        "wsl": true,
+        "python": "3.12.3"
+      },
+      "docker": {
+        "server": "29.1.3",
+        "other_running_containers": []
+      },
+      "clickhouse": {
+        "version": "26.8.24.9",
+        "server_settings": {
+          "max_server_memory_usage": "20670991236",
+          "max_server_memory_usage_to_ram_ratio": "0.9",
+          "memory_worker_dynamic_hard_limit": "1"
+        },
+        "database": "tpcds_sf20",
+        "tables": [
+          {
+            "name": "call_center",
+            "total_rows": 6,
+            "total_bytes": 7710
+          },
+          {
+            "name": "catalog_page",
+            "total_rows": 11718,
+            "total_bytes": 698056
+          },
+          {
+            "name": "catalog_returns",
+            "total_rows": 2882133,
+            "total_bytes": 313588331
+          },
+          {
+            "name": "catalog_sales",
+            "total_rows": 28803583,
+            "total_bytes": 3743277880
+          },
+          {
+            "name": "customer",
+            "total_rows": 266000,
+            "total_bytes": 22971753
+          },
+          {
+            "name": "customer_address",
+            "total_rows": 133000,
+            "total_bytes": 7277239
+          },
+          {
+            "name": "customer_demographics",
+            "total_rows": 1920800,
+            "total_bytes": 9474780
+          },
+          {
+            "name": "date_dim",
+            "total_rows": 73049,
+            "total_bytes": 1730226
+          },
+          {
+            "name": "household_demographics",
+            "total_rows": 7200,
+            "total_bytes": 36872
+          },
+          {
+            "name": "income_band",
+            "total_rows": 20,
+            "total_bytes": 1540
+          },
+          {
+            "name": "inventory",
+            "total_rows": 18271305,
+            "total_bytes": 75068933
+          },
+          {
+            "name": "item",
+            "total_rows": 28000,
+            "total_bytes": 3952367
+          },
+          {
+            "name": "promotion",
+            "total_rows": 355,
+            "total_bytes": 30960
+          },
+          {
+            "name": "reason",
+            "total_rows": 75,
+            "total_bytes": 4032
+          },
+          {
+            "name": "ship_mode",
+            "total_rows": 20,
+            "total_bytes": 3015
+          },
+          {
+            "name": "store",
+            "total_rows": 44,
+            "total_bytes": 14451
+          },
+          {
+            "name": "store_returns",
+            "total_rows": 5755095,
+            "total_bytes": 488176047
+          },
+          {
+            "name": "store_sales",
+            "total_rows": 57598932,
+            "total_bytes": 4974315424
+          },
+          {
+            "name": "time_dim",
+            "total_rows": 86400,
+            "total_bytes": 1089310
+          },
+          {
+            "name": "warehouse",
+            "total_rows": 5,
+            "total_bytes": 3546
+          },
+          {
+            "name": "web_page",
+            "total_rows": 264,
+            "total_bytes": 15206
+          },
+          {
+            "name": "web_returns",
+            "total_rows": 1439266,
+            "total_bytes": 145114826
+          },
+          {
+            "name": "web_sales",
+            "total_rows": 14396103,
+            "total_bytes": 1893287866
+          },
+          {
+            "name": "web_site",
+            "total_rows": 28,
+            "total_bytes": 11620
+          }
+        ]
+      },
+      "settings_profile": {
+        "data_type_default_nullable": 1,
+        "join_use_nulls": 1,
+        "group_by_use_nulls": 1,
+        "union_default_mode": "DISTINCT",
+        "intersect_default_mode": "DISTINCT",
+        "except_default_mode": "DISTINCT",
+        "joined_subquery_requires_alias": 0,
+        "cast_keep_nullable": 1,
+        "use_query_cache": 0,
+        "use_query_condition_cache": 0,
+        "max_execution_time": 1800,
+        "timeout_overflow_mode": "throw"
+      },
+      "git": {
+        "commit": "97b42c4bdc51fc59e947ea9b92a28a8c51091022",
+        "branch": "main",
+        "dirty": true
+      },
+      "query_files": {
+        "data/queries/sf20/query_0.sql": "69d53989d4335f8b8987cf9c3d3ab5e949aa8a05e19e07edd04c5e018bb65457"
+      }
+    },
+    {
+      "test": "throughput",
+      "time": "2026-10-26T19:57:46",
+      "argv": [
+        "part1-tpcds/scripts/harness.py",
+        "campaign",
+        "--sf",
+        "20",
+        "--streams-dir",
+        "data/queries/sf20",
+        "--load-cmd",
+        "python3 part1-tpcds/scripts/load.py --sf 20"
+      ],
+      "host": {
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+        "logical_cpus": 16,
+        "memory_gib": 23.47,
+        "wsl": true,
+        "python": "3.12.3"
+      },
+      "docker": {
+        "server": "29.1.3",
+        "other_running_containers": []
+      },
+      "clickhouse": {
+        "version": "26.8.24.9",
+        "server_settings": {
+          "max_server_memory_usage": "20670991236",
+          "max_server_memory_usage_to_ram_ratio": "0.9",
+          "memory_worker_dynamic_hard_limit": "1"
+        },
+        "database": "tpcds_sf20",
+        "tables": [
+          {
+            "name": "call_center",
+            "total_rows": 6,
+            "total_bytes": 7710
+          },
+          {
+            "name": "catalog_page",
+            "total_rows": 11718,
+            "total_bytes": 698056
+          },
+          {
+            "name": "catalog_returns",
+            "total_rows": 2882133,
+            "total_bytes": 313588331
+          },
+          {
+            "name": "catalog_sales",
+            "total_rows": 28803583,
+            "total_bytes": 3743277880
+          },
+          {
+            "name": "customer",
+            "total_rows": 266000,
+            "total_bytes": 22971753
+          },
+          {
+            "name": "customer_address",
+            "total_rows": 133000,
+            "total_bytes": 7277239
+          },
+          {
+            "name": "customer_demographics",
+            "total_rows": 1920800,
+            "total_bytes": 9474780
+          },
+          {
+            "name": "date_dim",
+            "total_rows": 73049,
+            "total_bytes": 1730226
+          },
+          {
+            "name": "household_demographics",
+            "total_rows": 7200,
+            "total_bytes": 36872
+          },
+          {
+            "name": "income_band",
+            "total_rows": 20,
+            "total_bytes": 1540
+          },
+          {
+            "name": "inventory",
+            "total_rows": 18271305,
+            "total_bytes": 75068933
+          },
+          {
+            "name": "item",
+            "total_rows": 28000,
+            "total_bytes": 3952367
+          },
+          {
+            "name": "promotion",
+            "total_rows": 355,
+            "total_bytes": 30960
+          },
+          {
+            "name": "reason",
+            "total_rows": 75,
+            "total_bytes": 4032
+          },
+          {
+            "name": "ship_mode",
+            "total_rows": 20,
+            "total_bytes": 3015
+          },
+          {
+            "name": "store",
+            "total_rows": 44,
+            "total_bytes": 14451
+          },
+          {
+            "name": "store_returns",
+            "total_rows": 5755095,
+            "total_bytes": 488176047
+          },
+          {
+            "name": "store_sales",
+            "total_rows": 57598932,
+            "total_bytes": 4974315424
+          },
+          {
+            "name": "time_dim",
+            "total_rows": 86400,
+            "total_bytes": 1089310
+          },
+          {
+            "name": "warehouse",
+            "total_rows": 5,
+            "total_bytes": 3546
+          },
+          {
+            "name": "web_page",
+            "total_rows": 264,
+            "total_bytes": 15206
+          },
+          {
+            "name": "web_returns",
+            "total_rows": 1439266,
+            "total_bytes": 145114826
+          },
+          {
+            "name": "web_sales",
+            "total_rows": 14396103,
+            "total_bytes": 1893287866
+          },
+          {
+            "name": "web_site",
+            "total_rows": 28,
+            "total_bytes": 11620
+          }
+        ]
+      },
+      "settings_profile": {
+        "data_type_default_nullable": 1,
+        "join_use_nulls": 1,
+        "group_by_use_nulls": 1,
+        "union_default_mode": "DISTINCT",
+        "intersect_default_mode": "DISTINCT",
+        "except_default_mode": "DISTINCT",
+        "joined_subquery_requires_alias": 0,
+        "cast_keep_nullable": 1,
+        "use_query_cache": 0,
+        "use_query_condition_cache": 0,
+        "max_execution_time": 1800,
+        "timeout_overflow_mode": "throw"
+      },
+      "git": {
+        "commit": "97b42c4bdc51fc59e947ea9b92a28a8c51091022",
+        "branch": "main",
+        "dirty": true
+      },
+      "query_files": {
+        "data/queries/sf20/query_1.sql": "f5fe429fba8bf6d8dfc469ab68aa75d9f37433471ed669de0f365cf59260a02c",
+        "data/queries/sf20/query_2.sql": "9ee3b05ffe2471968c5c55a72ca93230c8db748468d176cdd755296e72b4170b",
+        "data/queries/sf20/query_3.sql": "b676feac9eaf85ae29e86c5f4a15956792c17e4ddea28da0da74bf8bb109fd4d",
+        "data/queries/sf20/query_4.sql": "89c45f1718b39a856cca9c630b50248e0c07b14808e652a51dff53ff8409879c"
+      }
+    },
+    {
+      "test": "power_cold",
+      "time": "2026-10-26T20:06:11",
+      "argv": [
+        "part1-tpcds/scripts/harness.py",
+        "campaign",
+        "--sf",
+        "20",
+        "--streams-dir",
+        "data/queries/sf20",
+        "--load-cmd",
+        "python3 part1-tpcds/scripts/load.py --sf 20"
+      ],
+      "host": {
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+        "logical_cpus": 16,
+        "memory_gib": 23.47,
+        "wsl": true,
+        "python": "3.12.3"
+      },
+      "docker": {
+        "server": "29.1.3",
+        "other_running_containers": []
+      },
+      "clickhouse": {
+        "version": "26.8.24.9",
+        "server_settings": {
+          "max_server_memory_usage": "20670991236",
+          "max_server_memory_usage_to_ram_ratio": "0.9",
+          "memory_worker_dynamic_hard_limit": "1"
+        },
+        "database": "tpcds_sf20",
+        "tables": [
+          {
+            "name": "call_center",
+            "total_rows": 6,
+            "total_bytes": 7710
+          },
+          {
+            "name": "catalog_page",
+            "total_rows": 11718,
+            "total_bytes": 698056
+          },
+          {
+            "name": "catalog_returns",
+            "total_rows": 2882133,
+            "total_bytes": 313588331
+          },
+          {
+            "name": "catalog_sales",
+            "total_rows": 28803583,
+            "total_bytes": 3743277880
+          },
+          {
+            "name": "customer",
+            "total_rows": 266000,
+            "total_bytes": 22971753
+          },
+          {
+            "name": "customer_address",
+            "total_rows": 133000,
+            "total_bytes": 7277239
+          },
+          {
+            "name": "customer_demographics",
+            "total_rows": 1920800,
+            "total_bytes": 9474780
+          },
+          {
+            "name": "date_dim",
+            "total_rows": 73049,
+            "total_bytes": 1730226
+          },
+          {
+            "name": "household_demographics",
+            "total_rows": 7200,
+            "total_bytes": 36872
+          },
+          {
+            "name": "income_band",
+            "total_rows": 20,
+            "total_bytes": 1540
+          },
+          {
+            "name": "inventory",
+            "total_rows": 18271305,
+            "total_bytes": 75068933
+          },
+          {
+            "name": "item",
+            "total_rows": 28000,
+            "total_bytes": 3952367
+          },
+          {
+            "name": "promotion",
+            "total_rows": 355,
+            "total_bytes": 30960
+          },
+          {
+            "name": "reason",
+            "total_rows": 75,
+            "total_bytes": 4032
+          },
+          {
+            "name": "ship_mode",
+            "total_rows": 20,
+            "total_bytes": 3015
+          },
+          {
+            "name": "store",
+            "total_rows": 44,
+            "total_bytes": 14451
+          },
+          {
+            "name": "store_returns",
+            "total_rows": 5755095,
+            "total_bytes": 488176047
+          },
+          {
+            "name": "store_sales",
+            "total_rows": 57598932,
+            "total_bytes": 4974315424
+          },
+          {
+            "name": "time_dim",
+            "total_rows": 86400,
+            "total_bytes": 1089310
+          },
+          {
+            "name": "warehouse",
+            "total_rows": 5,
+            "total_bytes": 3546
+          },
+          {
+            "name": "web_page",
+            "total_rows": 264,
+            "total_bytes": 15206
+          },
+          {
+            "name": "web_returns",
+            "total_rows": 1439266,
+            "total_bytes": 145114826
+          },
+          {
+            "name": "web_sales",
+            "total_rows": 14396103,
+            "total_bytes": 1893287866
+          },
+          {
+            "name": "web_site",
+            "total_rows": 28,
+            "total_bytes": 11620
+          }
+        ]
+      },
+      "settings_profile": {
+        "data_type_default_nullable": 1,
+        "join_use_nulls": 1,
+        "group_by_use_nulls": 1,
+        "union_default_mode": "DISTINCT",
+        "intersect_default_mode": "DISTINCT",
+        "except_default_mode": "DISTINCT",
+        "joined_subquery_requires_alias": 0,
+        "cast_keep_nullable": 1,
+        "use_query_cache": 0,
+        "use_query_condition_cache": 0,
+        "max_execution_time": 1800,
+        "timeout_overflow_mode": "throw"
+      },
+      "git": {
+        "commit": "97b42c4bdc51fc59e947ea9b92a28a8c51091022",
+        "branch": "main",
+        "dirty": true
+      },
+      "query_files": {
+        "data/queries/sf20/query_0.sql": "69d53989d4335f8b8987cf9c3d3ab5e949aa8a05e19e07edd04c5e018bb65457"
+      }
+    },
+    {
+      "test": "power_warm",
+      "time": "2026-10-26T20:09:08",
+      "argv": [
+        "part1-tpcds/scripts/harness.py",
+        "campaign",
+        "--sf",
+        "20",
+        "--streams-dir",
+        "data/queries/sf20",
+        "--load-cmd",
+        "python3 part1-tpcds/scripts/load.py --sf 20"
+      ],
+      "host": {
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+        "logical_cpus": 16,
+        "memory_gib": 23.47,
+        "wsl": true,
+        "python": "3.12.3"
+      },
+      "docker": {
+        "server": "29.1.3",
+        "other_running_containers": []
+      },
+      "clickhouse": {
+        "version": "26.8.24.9",
+        "server_settings": {
+          "max_server_memory_usage": "20631058840",
+          "max_server_memory_usage_to_ram_ratio": "0.9",
+          "memory_worker_dynamic_hard_limit": "1"
+        },
+        "database": "tpcds_sf20",
+        "tables": [
+          {
+            "name": "call_center",
+            "total_rows": 6,
+            "total_bytes": 7710
+          },
+          {
+            "name": "catalog_page",
+            "total_rows": 11718,
+            "total_bytes": 698056
+          },
+          {
+            "name": "catalog_returns",
+            "total_rows": 2882133,
+            "total_bytes": 313588331
+          },
+          {
+            "name": "catalog_sales",
+            "total_rows": 28803583,
+            "total_bytes": 3743277880
+          },
+          {
+            "name": "customer",
+            "total_rows": 266000,
+            "total_bytes": 22971753
+          },
+          {
+            "name": "customer_address",
+            "total_rows": 133000,
+            "total_bytes": 7277239
+          },
+          {
+            "name": "customer_demographics",
+            "total_rows": 1920800,
+            "total_bytes": 9474780
+          },
+          {
+            "name": "date_dim",
+            "total_rows": 73049,
+            "total_bytes": 1730226
+          },
+          {
+            "name": "household_demographics",
+            "total_rows": 7200,
+            "total_bytes": 36872
+          },
+          {
+            "name": "income_band",
+            "total_rows": 20,
+            "total_bytes": 1540
+          },
+          {
+            "name": "inventory",
+            "total_rows": 18271305,
+            "total_bytes": 75068933
+          },
+          {
+            "name": "item",
+            "total_rows": 28000,
+            "total_bytes": 3952367
+          },
+          {
+            "name": "promotion",
+            "total_rows": 355,
+            "total_bytes": 30960
+          },
+          {
+            "name": "reason",
+            "total_rows": 75,
+            "total_bytes": 4032
+          },
+          {
+            "name": "ship_mode",
+            "total_rows": 20,
+            "total_bytes": 3015
+          },
+          {
+            "name": "store",
+            "total_rows": 44,
+            "total_bytes": 14451
+          },
+          {
+            "name": "store_returns",
+            "total_rows": 5755095,
+            "total_bytes": 488176047
+          },
+          {
+            "name": "store_sales",
+            "total_rows": 57598932,
+            "total_bytes": 4974315424
+          },
+          {
+            "name": "time_dim",
+            "total_rows": 86400,
+            "total_bytes": 1089310
+          },
+          {
+            "name": "warehouse",
+            "total_rows": 5,
+            "total_bytes": 3546
+          },
+          {
+            "name": "web_page",
+            "total_rows": 264,
+            "total_bytes": 15206
+          },
+          {
+            "name": "web_returns",
+            "total_rows": 1439266,
+            "total_bytes": 145114826
+          },
+          {
+            "name": "web_sales",
+            "total_rows": 14396103,
+            "total_bytes": 1893287866
+          },
+          {
+            "name": "web_site",
+            "total_rows": 28,
+            "total_bytes": 11620
+          }
+        ]
+      },
+      "settings_profile": {
+        "data_type_default_nullable": 1,
+        "join_use_nulls": 1,
+        "group_by_use_nulls": 1,
+        "union_default_mode": "DISTINCT",
+        "intersect_default_mode": "DISTINCT",
+        "except_default_mode": "DISTINCT",
+        "joined_subquery_requires_alias": 0,
+        "cast_keep_nullable": 1,
+        "use_query_cache": 0,
+        "use_query_condition_cache": 0,
+        "max_execution_time": 1800,
+        "timeout_overflow_mode": "throw"
+      },
+      "git": {
+        "commit": "97b42c4bdc51fc59e947ea9b92a28a8c51091022",
+        "branch": "main",
+        "dirty": true
+      },
+      "query_files": {
+        "data/queries/sf20/query_0.sql": "69d53989d4335f8b8987cf9c3d3ab5e949aa8a05e19e07edd04c5e018bb65457"
+      }
+    }
+  ]
+}
