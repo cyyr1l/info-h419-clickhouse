@@ -27,7 +27,7 @@ info-h419-clickhouse/
 │   ├── analysis/              # charts and tables of the report, EXPLAIN of the slowest queries
 │   └── query_status.md        # validation status of the 99 queries
 ├── part2-tpcdi/               # Part II (not started)
-└── report/                    # drafts; the reports themselves are submitted as PDF
+└── report/                    # output folder of the charts (report/part1/figures/); the reports are submitted as PDF
 ```
 
 Generated files go to `data/` (raw data, generated queries, validation output), which is not versioned.
