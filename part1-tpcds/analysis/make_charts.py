@@ -14,7 +14,9 @@ Rules (agreed in issue #5):
 - Failed or timed-out executions are left out of every time and median, and listed in failures.csv.
 - Warm time = median of the warm power runs (min and max shown as whiskers). Without warm runs,
   the single power run is used instead, and the output says so.
-- Scaling charts only use the queries that are `ok` at every SF.
+- Scaling charts only use the queries that are `ok` at every SF, and leave out the queries that
+  return 0 rows in stream 0 at some SFs but not at others (their times are not comparable); the
+  output and a note under each chart name them.
 - Concurrency efficiency = Sq * T_Power / T_TT1 (Sq = 1: no gain; Sq = perfect overlap).
 
 Figures (--out, default report/part1/figures), one question each:
@@ -22,8 +24,8 @@ Figures (--out, default report/part1/figures), one question each:
   query_times_sf<REF>.png  bars          how long does each query take? (15 slowest + the rest)
   scaling_total.png        line          does the total time grow like the data?
   scaling_queries.png      bars          which queries grow faster than the data? (15 that grow most)
-  concurrency.png          line          how much faster are the streams in parallel?
-  cold_warm_sf<REF>.png    dumbbell      how much faster are the slowest queries with the data in memory?
+  concurrency.png          grouped bars  how much faster are the streams at the same time than one after another?
+  cold_warm_sf<REF>.png    bars (+/- %)  do the slowest queries run faster in the warm runs than in the cold run?
 Every title states the conclusion; axes are in plain seconds (no log scales).
 Tables (--out/tables): summary_by_sf.csv (with size on disk and compression), per_query.csv,
 failures.csv, row_checks.csv (methodology 6.6: same row count in every run of stream 0; 0-row
@@ -76,6 +78,26 @@ def duration(v):
     if v >= 120:
         return f"{v / 60:.1f} min"
     return f"{v:.2f} s" if v < 1 else f"{v:.1f} s"
+
+
+def secs(v):
+    """Value label in seconds, whatever the size: 0.42 s, 9.6 s, 205.8 s."""
+    return f"{v:.2f} s" if v < 1 else f"{v:.1f} s"
+
+
+def factor(k):
+    """Scale-factor ratio: x4.17, x2.5 (no 4.16667)."""
+    return f"x{k:.2f}".rstrip("0").rstrip(".")
+
+
+def note(ax, text, y=-0.16):
+    """Small grey note under the plot, e.g. which queries were left out and why. Wrapped to the
+    width of the plot, so it never sticks out on the right of the figure."""
+    import textwrap
+    width_in = ax.get_position().width * ax.figure.get_figwidth()
+    chars = int(width_in * 18)              # about 18 characters per inch at 7.5 pt
+    lines = [textwrap.fill(par, chars) for par in " ".join(text.split("\n")).split("\n\n")]
+    ax.text(0, y, "\n".join(lines), transform=ax.transAxes, va="top", ha="left", fontsize=7.5, color=INK2)
 
 
 def narrow(ax, n, horizontal=False):
@@ -209,6 +231,27 @@ def row_checks(stmts):
         else pd.DataFrame(columns=cols)
 
 
+def mixed_zero_rows(stmts):
+    """Queries that return 0 rows in stream 0 at some SFs but not at others ({query: [those SFs]}).
+    An empty result is cheap to compute, so their time is not comparable across SFs: the query does
+    different work. The scaling charts leave them out and say so. A query that is empty at every SF
+    (e.g. Q8) stays in, since it is compared with itself."""
+    ok = stmts[(stmts.status == "ok") & (stmts.stream == 0)].dropna(subset=["result_rows"])
+    empty = ok.groupby(["sf", "query"]).result_rows.min().eq(0).unstack("sf").fillna(False)
+    mixed = empty[empty.any(axis=1) & ~empty.all(axis=1)]
+    return {int(q): [sf for sf in mixed.columns if mixed.loc[q, sf]] for q in mixed.index}
+
+
+def excluded_text(excl):
+    """Short note for under the scaling charts; the SFs of each query are in the output and in
+    tables/row_checks.csv."""
+    if not excl:
+        return ""
+    names = ", ".join(f"Q{q}" for q in excl)
+    return (f"Left out: {names}. They return 0 rows at some scale factors but not at others, "
+            f"so their times are not comparable across scale factors (see tables/row_checks.csv).")
+
+
 # ---------------------------------------------------------------- figures
 
 def save(fig, path):
@@ -240,13 +283,13 @@ def fig_load(summary, out):
     ax.bar(x, op, width=0.55, bottom=ld, color=BLUE_LIGHT, edgecolor="white", linewidth=1.5,
            label="OPTIMIZE FINAL")
     for i, v in zip(x, s.t_load_s):
-        ax.text(i, v / 60, duration(v), ha="center", va="bottom", color=INK2, fontsize=8)
+        ax.text(i, v / 60, f"{v / 60:.1f} min", ha="center", va="bottom", color=INK2, fontsize=8)
     ax.set_xticks(x, [sf_label(v) for v in s.sf])
     narrow(ax, len(s))
     ax.set_ylim(0, s.t_load_s.max() / 60 * 1.15)
-    ax.set_ylabel("T_Load (min)")
+    ax.set_ylabel("Load time (min)")
     last = s.iloc[-1]
-    ax.set_title(f"Loading {sf_label(last.sf)} takes {duration(last.t_load_s)}, "
+    ax.set_title(f"Loading {sf_label(last.sf)} takes {last.t_load_s / 60:.1f} min, "
                  f"{last.optimize_s / last.t_load_s:.0%} of it in OPTIMIZE")
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], labels[::-1], loc="upper left")   # same order as the stack
@@ -270,7 +313,7 @@ def fig_query_times(pq, ref, warm, out, top_n=15):
     y = list(range(len(values)))[::-1]
     ax.barh(y, values, color=colors, height=0.65)
     for yi, v in zip(y, values):
-        ax.text(v, yi, f"  {duration(v)} ({v / total:.0%})", va="center", fontsize=8, color=INK2)
+        ax.text(v, yi, f"  {secs(v)} ({v / total:.0%})", va="center", fontsize=8, color=INK2)
     ax.set_yticks(y, labels)
     ax.set_xlim(0, max(values) * 1.3)
     ax.set_xlabel("Time (s)")
@@ -285,109 +328,144 @@ def fig_query_times(pq, ref, warm, out, top_n=15):
     return share
 
 
-def common_queries(pq):
+def common_queries(pq, exclude=()):
+    """Queries with a time at every SF, minus the excluded ones (see mixed_zero_rows)."""
     wide = pq.pivot(index="query", columns="sf", values="time_s")
-    return wide.dropna()
+    return wide.dropna().drop(index=list(exclude), errors="ignore")
 
 
-def fig_scaling_total(pq, out):
+def fig_scaling_total(pq, excl, out):
     """Line: measured total time per SF against the dashed grey line of growth exactly like the data."""
-    common = common_queries(pq)
+    common = common_queries(pq, excl)
     sfs = list(common.columns)
-    total = common.sum()
+    total = common.sum() / 60                       # minutes, like the point labels
     linear = total.iloc[0] * pd.Series(sfs) / sfs[0]
-    fig, ax = plt.subplots(figsize=(5.2, 3.5))
-    ax.plot(sfs, linear, "--", color=MUTED, linewidth=1.2, label="if time grew exactly like the data")
+    fig, ax = plt.subplots(figsize=(5.6, 3.5))
+    ax.plot(sfs, linear, "--", color=MUTED, linewidth=1.2, label="if the time grew like the data")
     ax.plot(sfs, total, "o-", color=BLUE, linewidth=2, markersize=6, label="measured")
-    for sf, v in zip(sfs, total):
-        ax.annotate(duration(v), (sf, v), xytext=(4, -12), textcoords="offset points", ha="left",
-                    fontsize=8, color=INK2)
-    ax.set_xticks(sfs, [f"SF {v:g}" for v in sfs])
+    for i, (sf, v) in enumerate(zip(sfs, total)):
+        # above-left of each point, away from both lines; the first one below-right (axis on its left)
+        xy, ha, va = ((6, -6), "left", "top") if i == 0 else ((-6, 6), "right", "bottom")
+        ax.annotate(f"{v:.1f} min", (sf, v), xytext=xy, textcoords="offset points",
+                    ha=ha, va=va, fontsize=8, color=INK2)
+    ax.set_xticks(sfs, [sf_label(v) for v in sfs])
+    ax.set_xlim(sfs[0] - (sfs[-1] - sfs[0]) * 0.12, sfs[-1] + (sfs[-1] - sfs[0]) * 0.05)
     ax.set_ylim(0, max(total.max(), linear.max()) * 1.15)
-    ax.set_ylabel("Sum of the query times (s)")
+    ax.set_ylabel(f"Total time of the {len(common)} queries (min)")
     growth, k = total.iloc[-1] / total.iloc[0], sfs[-1] / sfs[0]
-    ax.set_title(f"{k:g}x more data, {growth:.1f}x more time ({len(common)} queries ok at every SF)")
+    ax.set_title(f"{factor(k)[1:]}x more data, {growth:.1f}x more time ({sf_label(sfs[0])} to {sf_label(sfs[-1])})")
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], labels[::-1], loc="upper left")
+    if excl:
+        note(ax, excluded_text(excl), y=-0.13)
     save(fig, out / "scaling_total.png")
+    return growth
 
 
-def fig_scaling_queries(pq, out, worse=1.2, top_n=15):
+def fig_scaling_queries(pq, excl, out, worse=1.2, top_n=15, min_s=1.0):
     """Bars: the queries whose time grows the most from the smallest to the largest SF, against the
-    dashed line of growth exactly like the data. Blue = clearly faster than the data (> 20% above)."""
-    common = common_queries(pq)
+    dashed line of growth exactly like the data. Each label also gives the two times, because a large
+    factor on a tiny time does not matter. Blue = takes at least `min_s` at the largest SF (it weighs
+    in the total time); grey = shorter, so a large factor adds little time."""
+    common = common_queries(pq, excl)
     lo, hi = common.columns[0], common.columns[-1]
     k = hi / lo
     ratio = (common[hi] / common[lo]).sort_values(ascending=False)
     bad = ratio[ratio > k * worse]
     g = ratio.head(top_n)[::-1]
-    fig, ax = plt.subplots(figsize=(6.5, 0.3 * len(g) + 1.4))
+    fig, ax = plt.subplots(figsize=(7, 0.3 * len(g) + 1.9))
     y = list(range(len(g)))
-    ax.barh(y, g, color=[BLUE if v > k * worse else MUTED for v in g], height=0.65)
-    ax.axvline(k, color=MUTED, linestyle="--", linewidth=1.2)
-    ax.text(k, len(g) - 0.4, f" data x{k:g}", color=INK2, fontsize=8, va="bottom")
-    for yi, v in zip(y, g):
-        ax.text(v, yi, f"  x{v:.1f}", va="center", fontsize=8, color=INK2)
+    heavy = [common.loc[q, hi] >= min_s for q in g.index]
+    ax.barh(y, g, color=[BLUE if h else MUTED for h in heavy], height=0.65)
+    ax.axvline(k, color=INK2, linestyle="--", linewidth=1.2)
+    ax.text(k, len(g) - 0.4, f" same growth as the data ({factor(k)})", color=INK2, fontsize=8, va="bottom")
+    for yi, q, v in zip(y, g.index, g):
+        ax.text(v, yi, f"  x{v:.1f}  ({secs(common.loc[q, lo])} → {secs(common.loc[q, hi])})",
+                va="center", fontsize=8, color=INK2)
     ax.set_yticks(y, [f"Q{q}" for q in g.index])
-    ax.set_xlim(0, g.max() * 1.18)
-    ax.set_ylim(-0.6, len(g) + 0.4)
-    ax.set_xlabel(f"Time at SF {hi:g} / time at SF {lo:g}")
-    ax.set_title(f"The {len(g)} queries whose time grows the most from SF {lo:g} to SF {hi:g}")
+    ax.set_xlim(0, g.max() * 1.45)
+    ax.set_ylim(-0.6, len(g) + 0.6)
+    ax.set_xlabel(f"How many times longer the query takes at {sf_label(hi)} than at {sf_label(lo)}")
+    top = g.index[-1]
+    ax.set_title(f"{len(bad)} queries grow clearly faster than the data; Q{top} the most (x{g.iloc[-1]:.0f})")
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(color=BLUE, label=f"takes {min_s:g} s or more at {sf_label(hi)}"),
+                       Patch(color=MUTED, label=f"under {min_s:g} s at {sf_label(hi)}: large factor, little time")],
+              loc="lower right")
     ax.grid(axis="y", visible=False)
+    if excl:
+        note(ax, excluded_text(excl), y=-0.1)
     save(fig, out / "scaling_queries.png")
     return ratio.sort_values(), bad
 
 
 def fig_concurrency(summary, out):
-    """Line: how many times faster the streams run in parallel than one after another, per SF,
-    between the two reference values 1 (no gain) and Sq (best possible)."""
+    """Grouped bars, in minutes: the Sq streams run one after another (estimated as Sq x T_Power,
+    light grey, since it is not measured) against the same streams run at the same time (T_TT1,
+    measured, blue). The label above the blue bar is how many times faster that is."""
     s = summary.dropna(subset=["concurrency_efficiency"]).sort_values("sf")
     if s.empty:
         print("  concurrency.png skipped: no throughput test in summary.json")
         return
     sq = int(s.streams.iloc[0])
-    fig, ax = plt.subplots(figsize=(5.2, 3.3))
-    edge = ax.get_yaxis_transform()   # x in axes fraction, y in data units
-    for yv, txt in ((1, "1 = no gain"), (sq, f"{sq} = best possible")):
-        ax.axhline(yv, color=MUTED, linestyle="--", linewidth=1.1)
-        ax.text(0.01, yv + 0.05, txt, transform=edge, fontsize=8, color=INK2)
-    x = [sf_label(v) for v in s.sf]
-    ax.plot(x, s.concurrency_efficiency, "o-", color=BLUE, linewidth=2, markersize=6)
-    for i, e in enumerate(s.concurrency_efficiency):
-        ax.annotate(f"x{e:.1f} faster", (i, e), xytext=(0, 8), textcoords="offset points", ha="center",
-                    fontsize=8, color=INK)
-    ax.set_ylim(0, sq + 0.7)
-    ax.set_ylabel(f"Speed-up of {sq} streams in parallel")
-    ax.set_title(f"Running {sq} streams at once is about x{s.concurrency_efficiency.median():.1f} faster")
+    seq, par = sq * s.t_power_s / 60, s.t_tt1_s / 60
+    fig, ax = plt.subplots(figsize=(5.6, 3.6))
+    x = list(range(len(s)))
+    w = 0.38
+    ax.bar([i - w / 2 for i in x], seq, width=w, color=GRID_DARK,
+           label=f"one after another (estimated: {sq} x power test)")
+    ax.bar([i + w / 2 for i in x], par, width=w, color=BLUE, label="at the same time (measured)")
+    mins = lambda v: f"{v:.1f}" if v < 10 else f"{v:.0f}"
+    for i, a, b in zip(x, seq, par):
+        ax.text(i - w / 2, a, mins(a), ha="center", va="bottom", fontsize=8, color=INK2)
+        ax.text(i + w / 2, b, mins(b), ha="center", va="bottom", fontsize=8, color=INK)
+    # the speed-up goes under each SF, where it cannot collide with the bar labels
+    ax.set_xticks(x, [f"{sf_label(v)}\nx{e:.1f} faster" for v, e in zip(s.sf, s.concurrency_efficiency)])
+    ax.set_ylim(0, seq.max() * 1.2)
+    ax.set_ylabel(f"Time to run the {sq} query streams (min)")
+    last = s.iloc[-1]
+    ax.set_title(f"Running the {sq} streams at the same time: {last.t_tt1_s / 60:.0f} min instead of "
+                 f"{sq * last.t_power_s / 60:.0f} at {sf_label(last.sf)}")
+    ax.legend(loc="upper left")
     ax.grid(axis="x", visible=False)
+    note(ax, f"Each stream runs the 99 queries. 'One after another' is estimated from the power test (stream 0);\n"
+             f"streams 1-{sq} use other query parameters, so the speed-up is an approximation.", y=-0.2)
     save(fig, out / "concurrency.png")
 
 
 def fig_cold_warm(pq, ref, out, n=10):
-    """Dumbbell: cold (blue, first run) and warm (orange, data already in memory) per query,
-    joined by a grey line; the label is how much faster the warm run is."""
+    """Diverging bars: for the slowest queries, the warm median compared with the cold run, in %,
+    around 0 (same time); the grey line is the range of the warm runs."""
     d = pq[(pq.sf == ref) & pq.cold_s.notna() & pq.warm_median_s.notna()]
     if d.empty:
         print(f"  cold_warm_sf{ref:g}.png skipped: needs cold and warm runs")
         return
     d = d.nlargest(n, "warm_median_s").iloc[::-1]
-    fig, ax = plt.subplots(figsize=(6.3, 0.36 * len(d) + 1.5))
+    # the message is the difference, so the difference is what is drawn: warm vs cold in %,
+    # around a 0 line (0 = same time). Orange bar = warm median; grey line = range of the warm runs.
+    pct = (d.warm_median_s - d.cold_s) / d.cold_s * 100
+    lo = (d.warm_min_s - d.cold_s) / d.cold_s * 100
+    hi = (d.warm_max_s - d.cold_s) / d.cold_s * 100
+    fig, ax = plt.subplots(figsize=(6.3, 0.36 * len(d) + 1.7))
     y = list(range(len(d)))
-    ax.hlines(y, d[["cold_s", "warm_median_s"]].min(axis=1), d[["cold_s", "warm_median_s"]].max(axis=1),
-              color=GRID_DARK, linewidth=3, zorder=1)
-    ax.scatter(d.cold_s, y, s=45, color=BLUE, zorder=3, label="cold (first run)")
-    ax.scatter(d.warm_median_s, y, s=45, color=ORANGE, zorder=3, label="warm (data already in memory)")
-    right = d[["cold_s", "warm_median_s"]].max(axis=1)
-    for yi, r, c, w in zip(y, right, d.cold_s, d.warm_median_s):
-        txt = f"{(c - w) / c:.0%} faster warm" if w < c else f"{(w - c) / c:.0%} slower warm"
-        ax.text(r, yi, f"   {txt}", va="center", fontsize=8, color=INK2)
-    ax.set_yticks(y, [f"Q{q}" for q in d["query"]])
-    ax.set_xlim(0, right.max() * 1.45)
-    ax.set_xlabel("Time (s)")
-    gain = ((d.cold_s - d.warm_median_s) / d.cold_s).median()
-    ax.set_title(f"With the data in memory, the slowest queries run about {gain:.0%} faster "
-                 f"({sf_label(ref)})", pad=24)
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, borderaxespad=0.2)
+    ax.barh(y, pct, color=ORANGE, height=0.55, zorder=2)
+    ax.hlines(y, lo, hi, color=INK2, linewidth=1.2, zorder=3)
+    ax.axvline(0, color=INK2, linewidth=1)
+    lim = max(abs(lo).max(), abs(hi).max(), 10) * 1.35
+    for yi, p, a, b, c in zip(y, pct, lo, hi, d.cold_s):
+        edge = max(b, p) if p >= 0 else min(a, p)
+        ax.text(edge, yi, f"  {p:+.0f}%  " if p >= 0 else f"  {p:+.0f}%  ", va="center",
+                ha="left" if p >= 0 else "right", fontsize=8, color=INK2)
+    ax.set_yticks(y, [f"Q{q} ({secs(c)} cold)" for q, c in zip(d["query"], d.cold_s)])
+    ax.set_xlim(-lim, lim)
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:+.0f}%" if v else "0"))
+    ax.set_xlabel("Warm time compared with the cold time\n← faster when warm        slower when warm →")
+    med = pct.median()
+    ax.set_title(f"Cold and warm runs take almost the same time (median {med:+.0f}%, {sf_label(ref)})")
+    nw = int(d.warm_runs_ok.max())
+    note(ax, f"The {len(d)} slowest queries. Bar: median of the {nw} warm runs compared with the cold run. "
+             f"Line: range of the {nw} warm runs.",
+         y=-0.2)
     ax.grid(axis="y", visible=False)
     save(fig, out / f"cold_warm_sf{ref:g}.png")
 
@@ -434,9 +512,10 @@ def main(argv=None):
     fig_load(summary, out)
     share = fig_query_times(pq, ref, warm, out)
     ratio = bad = None
+    excl = mixed_zero_rows(stmts)
     if len(common_queries(pq).columns) >= 2:
-        fig_scaling_total(pq, out)
-        ratio, bad = fig_scaling_queries(pq, out)
+        fig_scaling_total(pq, excl, out)
+        ratio, bad = fig_scaling_queries(pq, excl, out)
     else:
         print("  scaling_total.png, scaling_queries.png skipped: need at least 2 SFs")
     fig_concurrency(summary, out)
@@ -461,6 +540,9 @@ def main(argv=None):
         print(f"warm spread (max-min)/median: median {r.warm_spread.median():.1%}, "
               f"max {r.warm_spread.max():.1%} (Q{int(r.loc[r.warm_spread.idxmax(), 'query'])})")
     if ratio is not None:
+        if excl:
+            print("left out of the scaling charts (0 rows in stream 0 at some SFs only): " +
+                  "; ".join(f"Q{q} at {', '.join(sf_label(x) for x in sfs)}" for q, sfs in excl.items()))
         print(f"growth from the smallest to the largest SF: median x{ratio.median():.1f}, "
               f"range x{ratio.min():.1f} (Q{ratio.index[0]}) to x{ratio.max():.1f} (Q{ratio.index[-1]})")
         print(f"growing clearly faster than the data: {len(bad)} queries "
