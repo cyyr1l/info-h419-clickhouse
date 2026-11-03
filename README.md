@@ -8,11 +8,27 @@ Results in this repository are *derived from* TPC-DS and TPC-DI. They are not of
 Part I (TPC-DS) is complete: the steps below rebuild it from scratch, from the data generation to the
 charts of the report. Part II (TPC-DI) has not started yet.
 
+## Quick start: one command
+
+```bash
+git clone https://github.com/cyyr1l/info-h419-clickhouse.git
+cd info-h419-clickhouse
+./run.sh          # the whole benchmark: check at SF 1, then SF 12, 20, 30 and 50, then the charts (about 3 hours)
+```
+
+`./run.sh 1` does a quick run at SF 1 only (about 15 minutes). `run.sh` runs the steps of
+[Part I](#part-i-tpc-ds) below in order and stops at the first error with a message. It needs Docker and
+Python 3.10 or later (see [Requirements](#requirements)): everything else, the TPC-DS tools included, is in
+the repository or is downloaded by Docker. Each campaign writes its results to
+`part1-tpcds/results/sf<SF>/<run_id>/`, and the log of the run goes to `data/run-<time>.log`. On Windows,
+run it in a WSL2 terminal.
+
 ## Repository layout
 
 ```
 info-h419-clickhouse/
 ├── README.md                  # this file: how to reproduce
+├── run.sh                     # the whole Part I benchmark in one command
 ├── docker/
 │   ├── docker-compose.yml     # ClickHouse 26.8.24.9 server + the TPC-DS tools image
 │   └── tpcds-kit/             # Dockerfile that builds dsdgen/dsqgen from the TPC zip, rowcounts.c helper
@@ -27,11 +43,11 @@ info-h419-clickhouse/
 │   ├── analysis/              # charts and tables of the report, EXPLAIN of the slowest queries
 │   └── query_status.md        # validation status of the 99 queries
 ├── part2-tpcdi/               # Part II (not started)
-└── report/                    # output folder of the charts (report/part1/figures/); the reports are submitted as PDF
+├── report/                    # output folder of the charts (report/part1/figures/); the reports are submitted as PDF
+└── tools/                     # TPC-DS Tools v4.0.0 (TPC licence, see tools/README.md)
 ```
 
-Generated files go to `data/` (raw data, generated queries, validation output), which is not versioned.
-The TPC tools go to `tools/`, also not versioned.
+Generated files go to `data/` (raw data, generated queries, validation output, logs), which is not versioned.
 
 ## Requirements
 
@@ -65,20 +81,13 @@ The TPC tools go to `tools/`, also not versioned.
 
 Run every command from the root of the repository.
 
-### 1. Get the TPC-DS tools
+### 1. The TPC-DS tools
 
-The TPC-DS tools are not included, because the TPC licence does not allow their redistribution. Download
-**TPC-DS Tools v4.0.0** from the TPC website (https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp,
-a short form sends the download link by e-mail), put the zip in `tools/` and unzip it there:
-
-```bash
-mkdir -p tools && cd tools
-python3 -m zipfile -e <downloaded zip> .     # or unzip <downloaded zip>; creates tools/DSGen-software-code-4.0.0/
-cd ..
-```
-
-The scripts build `dsdgen` and `dsqgen` from this folder in a Docker image the first time they need them
-(about 1 to 2 minutes).
+**THE TPC SOFTWARE IS AVAILABLE WITHOUT CHARGE FROM TPC.** The TPC-DS Tools v4.0.0 are included in
+`tools/DSGen-software-code-4.0.0/`, unmodified, under clause 9 of the TPC licence (its full text is in
+`tools/DSGen-software-code-4.0.0/EULA.txt`; see [`tools/README.md`](tools/README.md)). There is nothing to
+download. The scripts build `dsdgen` and `dsqgen` from this folder in a Docker image the first time they
+need them (about 1 to 2 minutes).
 
 ### 2. Start ClickHouse
 
@@ -230,7 +239,7 @@ The tests that need ClickHouse are skipped when no server answers on `localhost:
 
 | Symptom | Cause and fix |
 |---|---|
-| `docker compose build tpcds-kit failed` | The TPC-DS tools are not in `tools/DSGen-software-code-4.0.0/` (step 1). |
+| `docker compose build tpcds-kit failed` | The first build downloads Debian packages, so it needs internet access; `tools/DSGen-software-code-4.0.0/` must also be complete (step 1). |
 | `cannot reach ClickHouse at http://localhost:8123/` | ClickHouse is not running: `docker compose -f docker/docker-compose.yml up -d --wait`. |
 | `load.py` finds no files although `gen_data.py` succeeded | The ClickHouse container was created from another copy of the repository, so it mounts another `data/` folder. Recreate it: `docker compose -f docker/docker-compose.yml up -d --force-recreate clickhouse`. |
 | `manifest.json not found` | Run `gen_data.py --sf N` before `load.py --sf N`. |
