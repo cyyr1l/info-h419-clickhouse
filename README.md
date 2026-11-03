@@ -16,7 +16,7 @@ cd info-h419-clickhouse
 ./run.sh          # the whole benchmark: check at SF 1, then SF 12, 20, 30 and 50, then the charts (about 3 hours)
 ```
 
-`./run.sh 1` does a quick run at SF 1 only (about 15 minutes). `run.sh` runs the steps of
+`./run.sh 1` does a quick run at SF 1 only (about 10 minutes). `run.sh` runs the steps of
 [Part I](#part-i-tpc-ds) below in order and stops at the first error with a message. It needs Docker and
 Python 3.10 or later (see [Requirements](#requirements)): everything else, the TPC-DS tools included, is in
 the repository or is downloaded by Docker. Each campaign writes its results to

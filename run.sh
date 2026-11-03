@@ -3,7 +3,7 @@
 #
 #   ./run.sh            check at SF 1, campaigns at SF 12, 20, 30 and 50, then the charts
 #                       (about 3 hours; README.md gives the memory and disk needed)
-#   ./run.sh 1          quick run: check at SF 1, then one campaign at SF 1 (about 15 minutes)
+#   ./run.sh 1          quick run: check at SF 1, then one campaign at SF 1 (about 10 minutes)
 #   ./run.sh 12 20      check at SF 1, then campaigns at the given scale factors
 #
 # The steps are those of README.md, "Part I". The check at SF 1 compares the results of the 99 queries
