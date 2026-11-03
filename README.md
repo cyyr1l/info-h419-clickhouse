@@ -215,10 +215,11 @@ python3 -m venv .venv             # on Debian/Ubuntu, this needs: sudo apt insta
 .venv/bin/python part1-tpcds/analysis/make_charts.py      # writes report/part1/figures/
 ```
 
-It takes the latest run of every scale factor in `part1-tpcds/results/`. If you added runs at other scale
-factors (e.g. SF 1), move their folders out of `part1-tpcds/results/` to get exactly our figures, or pick
-runs with `--run SF=RUN_ID`. [`part1-tpcds/analysis/README.md`](part1-tpcds/analysis/README.md) explains each
-chart and the rules used.
+It takes the latest run of every scale factor in `part1-tpcds/results/`. To get exactly our figures after
+other runs, move the folders of other scale factors out of `part1-tpcds/results/` (e.g. `sf1/` after
+`./run.sh 1`), and if you ran SF 12 to 50 again, pick our runs with `--run SF=RUN_ID` (e.g.
+`--run 12=20261026-193856`). [`part1-tpcds/analysis/README.md`](part1-tpcds/analysis/README.md) explains
+each chart and the rules used.
 
 With a scale factor loaded and its streams generated, `explain_queries.py` saves the execution plans and
 the `system.query_log` values of the slowest queries (report, Section 8), in `data/explain/sf<N>/`:
