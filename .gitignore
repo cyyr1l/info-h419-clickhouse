@@ -10,12 +10,15 @@ Batch1/
 Batch2/
 Batch3/
 
-# ===== Official TPC tools (licence: do not redistribute, see README) =====
-*TPC-DS*_Tools*.zip
+# ===== Official TPC tools =====
+# The TPC-DS kit 4.0.0 is committed (TPC EULA, clause 9, see tools/README.md), without its specification
+# PDF. Other TPC downloads (zips, the TPC-DI tools) stay out of git.
+tools/*
+!tools/README.md
+!tools/DSGen-software-code-4.0.0/
+tools/DSGen-software-code-4.0.0/specification/
 *TPC-DI*_Tools*.zip
-*TPC-DS*_Tools*/
 *TPC-DI*_Tools*/
-tools/
 DIGen.jar
 
 # Compiled tpcds-kit binaries
