@@ -1,0 +1,382 @@
+% =====================================================================
+% INFO-H-419 Data Warehouses -- Part II: TPC-DI on ClickHouse
+% Report skeleton for OpenAI Prism. Same preamble and conventions as the
+% Part I report.
+%
+% Report editor: Bao Anh Tran (role 2). The editor writes the
+% Introduction and the Conclusion, merges the sections, harmonises the
+% style, exports the PDF and submits.
+%
+% Who writes what (docs/ROADMAP.md, section 6):
+%   1    Introduction ........................... editor (Bao Anh)
+%   2    TPC-DI Overview ........................ Anabelle (role 3)
+%   3    Architecture ........................... Cyril (role 1)
+%   4.1  Staging, Loaders and Orchestration ..... Cyril (role 1)
+%   4.2  DW Schema, SCD2 and Surrogate Keys ..... Anabelle (role 3)
+%   4.3  Transformation Rules ................... owner of each cluster
+%   5    Validation ............................. Paula (role 4)
+%   6    Benchmark Setup and Methodology ........ Bao Anh (role 2)
+%   7    Results ................................ Paula (charts, analysis),
+%                                                 Bao Anh (metric, 7.4)
+%   8    Discussion ............................. Anabelle and Paula
+%   9    Conclusion ............................. editor (Bao Anh)
+%   A    Reproduction Guide ..................... Cyril (role 1)
+%   B    Changes to the TPC-DI SQL .............. Paula (role 4)
+%
+% Conventions (as in Part I):
+%   - \todo{...} marks a part still to write; none may remain in the
+%     final PDF. Keep its label short: \colorbox does not break lines.
+%     The guidance for each part is in the comments below its \todo.
+%   - Scale factors: SF-10. Specification: Clause~7 for a whole clause,
+%     \S7.5 for a sub-clause (TPC-DI v1.1.0).
+%   - Code, tables and columns: \code{DimTrade}; files and settings: \path{...}.
+%   - Say that our results are derived from TPC-DI, never that they are
+%     TPC-DI results (TPC fair use policy).
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Page layout and fonts ----------
+\usepackage[a4paper, margin=2cm]{geometry}   % reduced margins
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{microtype}                       % better line breaks
+\usepackage{parskip}                         % blank line between paragraphs, no indent
+
+% ---------- Figures and tables ----------
+\usepackage{graphicx}                        % \includegraphics (Paula's charts)
+\usepackage{float}                           % [H] to place a figure exactly here
+\usepackage{caption}
+\usepackage{subcaption}                      % several charts side by side
+\usepackage{booktabs}                        % clean tables: \toprule \midrule \bottomrule
+\usepackage{tabularx}                        % tables as wide as the text
+\usepackage{longtable}                       % tables over several pages
+\usepackage{array}
+\usepackage{multirow}
+
+% ---------- Maths and numbers ----------
+\usepackage{amsmath}                         % metric formula (Section 6.5)
+
+% ---------- Lists, colours, code ----------
+\usepackage{enumitem}
+\setlist{nosep}                              % compact lists
+\usepackage[table]{xcolor}
+\usepackage{listings}                        % command and SQL blocks
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single, rulecolor=\color{gray!40},
+  breaklines=true, breakatwhitespace=true,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false,
+  xleftmargin=3pt, xrightmargin=3pt,
+  literate={…}{{\ldots}}1 {→}{{$\rightarrow$}}1 {×}{{$\times$}}1
+           {–}{{--}}1 {—}{{---}}1
+}
+\lstdefinestyle{bash}{language=bash}
+\lstdefinestyle{sql}{language=SQL, morekeywords={ENGINE,MergeTree,ReplacingMergeTree,OPTIMIZE,FINAL,Nullable,EXCHANGE,TABLES}}
+
+% ---------- Links (load last) ----------
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}             % clickable references and table of contents
+
+% ---------- Shortcuts ----------
+\newcommand{\code}[1]{\texttt{#1}}           % inline code: \code{DimTrade}
+\newcommand{\todo}[1]{\colorbox{yellow}{\textbf{[TO COMPLETE: #1]}}}
+
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}   % X column, left-aligned (no stretched spaces)
+\renewcommand{\arraystretch}{1.25}                    % a little more space between table rows
+
+% ---------- Title ----------
+\title{\textbf{INFO-H-419 Data Warehouses}\\[4pt]
+       \Large Part II: TPC-DI on ClickHouse}
+\author{Bao Anh Tran, Anabelle Meli, Cyril Stembert, Paula Ventura\\[4pt]
+        \small Université libre de Bruxelles --- Lecturer: Prof.\ Esteban Zimányi}
+\date{December 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Introduction}
+\label{sec:intro}
+% Writer: report editor (Bao Anh). Written last.
+
+\todo{introduction, written last}
+% - Goal of Part II: build an ETL that loads the TPC-DI data warehouse into
+%   ClickHouse (historical load and two incremental batches) and measure it.
+% - What we built, in two sentences: ELT inside ClickHouse, driven by a
+%   Python orchestrator (Section 3).
+% - The main results, in two sentences.
+% - Structure of the report.
+% - Keep this sentence (TPC fair use policy):
+
+Our results are derived from TPC-DI and are not official TPC benchmark results~\cite{r1}.
+
+% =====================================================================
+\section{TPC-DI Overview}
+\label{sec:tpcdi}
+% Writer: Anabelle (role 3).
+
+\subsection{Business Scenario}
+\todo{brokerage firm and its source systems}
+% The brokerage firm and its sources: OLTP database, customer management
+% system (XML extract), financial newswire (FINWIRE), HR file, prospect
+% list (Clause~1)~\cite{r1,r2}.
+
+\subsection{Source Data and Staging Area}
+\todo{file formats, batches, CDC}
+% File formats: CSV, pipe-delimited, XML, fixed-width FINWIRE records.
+% The three batches (Batch1 historical, Batch2 and Batch3 incremental),
+% the CDC_FLAG / CDC_DSN fields of the incremental files (\S2.2--2.3).
+
+\subsection{Data Warehouse Model}
+\todo{dimensions, facts, history tracking}
+% Dimensions, facts and reference tables; history-tracking (type 2)
+% dimensions (\S4.4.1); the DImessages and Audit tables (Clause~3).
+
+\subsection{Benchmark Phases and Metric}
+\todo{phases of a benchmark run}
+% Initialization, Historical Load, Incremental Updates 1 and 2, Automated
+% Audit (\S7.2), in a few lines. The metric is defined in
+% Section~\ref{sec:metric}.
+
+% =====================================================================
+\section{Architecture}
+\label{sec:architecture}
+% Writer: Cyril (role 1).
+
+\todo{architecture diagram}
+% Staging Area files -> loaders -> ClickHouse staging tables -> SQL
+% transformations -> data warehouse tables, driven by the Python
+% orchestrator.
+
+\todo{tools and versions}
+% Docker, ClickHouse 26.8.24.9, Python, DIGen 1.1.0 on Java 8.
+
+\todo{why ELT inside ClickHouse}
+% Decided on 6 November. Compare with dbt (dbt-clickhouse) and with a
+% Python (pandas) ETL: single engine, easy timing of each step, more to
+% say about ClickHouse.
+
+% =====================================================================
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{Staging, Loaders and Orchestration}
+\label{sec:staging}
+% Writer: Cyril (role 1).
+\todo{loaders and orchestrator}
+% One loader per file format; the XML conversion of CustomerMgmt.xml;
+% FINWIRE records read as whole lines and cut with substring; how the
+% orchestrator runs the steps in dependency order, logs them and writes
+% the 'Status' message at the start of each phase.
+
+\subsection{Data Warehouse Schema, SCD2 and Surrogate Keys}
+\label{sec:schema}
+% Writer: Anabelle (role 3).
+\todo{table engines, sorting keys and data types}
+% No column added or removed (\S3.4.5). MessageDateAndTime as
+% DateTime64(3), because CURRENT_TIMESTAMP only has 1-second precision.
+
+\todo{SCD2 and surrogate keys}
+% Window functions in the historical load; rebuild + EXCHANGE TABLES in the
+% incremental batches; DimTrade as a ReplacingMergeTree without a version
+% column, read with FINAL. Surrogate keys without SERIAL/IDENTITY.
+
+\subsection{Transformation Rules}
+\label{sec:transformations}
+
+\subsubsection{Cluster A: Reference Tables, DimBroker, DimCompany, DimSecurity, Financial}
+% Writer: Cyril (role 1).
+\todo{cluster A}
+% Source to target mapping and the rules that needed care.
+
+\subsubsection{Cluster B: DimCustomer, DimAccount, Prospect}
+% Writer: Anabelle (role 3).
+\todo{cluster B}
+% Source to target mapping and the rules that needed care.
+
+\subsubsection{Cluster C: DimTrade, FactCashBalances, FactHoldings}
+% Writer: Bao Anh (role 2). Notes: docs/tpcdi-cluster-c.md.
+\todo{cluster C}
+% Status history of a trade; dimension keys taken when a trade first
+% appears; running cash balance per account; holdings from DimTrade.
+
+\subsubsection{Cluster D: FactWatches, FactMarketHistory}
+% Writer: Paula (role 4).
+\todo{cluster D}
+% Source to target mapping and the rules that needed care.
+
+% =====================================================================
+\section{Validation}
+\label{sec:validation}
+% Writer: Paula (role 4).
+
+\subsection{Batch Validation and DImessages}
+\todo{batch validation, alerts and status messages}
+% The batch validation query at the end of each phase (\S7.4) and the
+% phase completion record; alerts and status messages.
+
+\subsection{Data Visibility}
+\todo{data visibility queries}
+% The data visibility queries during the incremental phases (\S7.3), what
+% the audit checks on them, and why we read with final = 1.
+
+\subsection{Audit Results}
+\todo{audit results per SF}
+% Output of the audit query for each SF: number of tests, all "OK" or the
+% failing tests with their explanation.
+
+% =====================================================================
+\section{Benchmark Setup and Methodology}
+\label{sec:methodology}
+% Writer: Bao Anh (role 2). Source: docs/benchmark-protocol-part2.md~\cite{r3}.
+
+\subsection{System Under Test}
+\todo{machine, versions, clock correction}
+% Same machine and conditions as in Part I. Every clock of the WSL2 VM
+% runs about 8% fast (all four clocksources tried); official phase times
+% come from ClickHouse timestamps, step times are corrected by the drift
+% factor measured at each run.
+
+\subsection{Scale Factors}
+\todo{reference SF and series}
+% Reference SF and series; size and generation time of each SF.
+
+\subsection{Benchmark Run}
+\todo{phases and clean start}
+% The phases in order, the clean start before each run, what is timed.
+
+\subsection{Timing}
+\todo{phase completion records and step timing}
+% Phase completion records in DImessages, millisecond timestamps, step
+% timing by the orchestrator.
+
+\subsection{Metric}
+\label{sec:metric}
+
+The phase elapsed times come from the phase completion records:
+$E_H = \mathit{CT}_1 - \mathit{CT}_0$, $E_{I1} = \mathit{CT}_2 - \mathit{CT}_1$ and
+$E_{I2} = \mathit{CT}_3 - \mathit{CT}_2$ (\S7.5). With $R_H$, $R_{I1}$ and $R_{I2}$
+the row counts of the three batches reported by DIGen, the metric is (\S7.6.1)
+\[
+  \mathit{TPC\_DI\_RPS} =
+  \left\lfloor \sqrt{T_H \cdot \min(T_{I1}, T_{I2})} \right\rfloor,
+  \qquad
+  T_H = \frac{R_H}{E_H},
+  \qquad
+  T_{Ik} = \frac{R_{Ik}}{\max(E_{Ik},\, 1800)} .
+\]
+
+\todo{effect of the 1800 s floor}
+% At our SFs the incremental phases are far below 1800 s, so the metric
+% mostly follows the SF; we also report the unfloored throughputs.
+
+\subsection{Repetitions and Controls}
+\todo{three runs per SF}
+% Three runs per SF, median with min and max; no warm runs (\S7.1).
+
+\subsection{Deviations from the Specification}
+\todo{list of deviations}
+% From the protocol, section 7.
+
+% =====================================================================
+\section{Results}
+\label{sec:results}
+% Writers: Paula (role 4) for the charts and the analysis,
+% Bao Anh (role 2) for the metric (Section 7.4).
+
+\subsection{Phase Times per Scale Factor}
+\todo{chart and table of the phase times}
+% E_H, E_I1, E_I2 per SF.
+
+\subsection{Time per Step}
+\todo{which steps dominate}
+
+\subsection{Scaling}
+\todo{growth of the phase times with the SF}
+
+\subsection{Throughput and Metric}
+\label{sec:metricresults}
+\todo{throughputs and TPC\_DI\_RPS per SF}
+% T_H, T_I1, T_I2 and TPC_DI_RPS per SF, with the unfloored throughputs.
+
+\subsection{Failures and Anomalies}
+\todo{failures and anomalies}
+
+% =====================================================================
+\section{Discussion}
+\label{sec:discussion}
+% Writers: Anabelle (role 3) and Paula (role 4).
+
+\todo{is ClickHouse a good fit for ETL?}
+% UPDATE and SCD2, XML and fixed-width sources, data visibility without
+% transactions. Link to the course chapters on dimension changes (dw04)
+% and ETL (dw05)~\cite{r6}.
+
+% =====================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% Writer: report editor (Bao Anh). Written last.
+
+\todo{conclusion, written last}
+% What worked, what did not, what we would do differently.
+
+% =====================================================================
+\begin{thebibliography}{9}
+
+\bibitem{r1}
+Transaction Processing Performance Council.
+\emph{TPC Benchmark DI (TPC-DI) Standard Specification}, revision 1.1.0, November 2014.
+\url{https://www.tpc.org/TPC_Documents_Current_Versions/pdf/TPC-DI_v1.1.0.pdf}
+
+\bibitem{r2}
+M.~Poess, T.~Rabl, H.-A.~Jacobsen and B.~Caufield.
+TPC-DI: the first industry benchmark for data integration.
+\emph{Proceedings of the VLDB Endowment}, 7(13):1367--1378, 2014.
+
+\bibitem{r3}
+Benchmark protocol, Part II. \path{docs/benchmark-protocol-part2.md} in~\cite{r7}.
+
+\bibitem{r4}
+TPC-DI audit, batch validation and data visibility queries (Appendices A--C of the
+specification), copy in the \code{databricks-tpc-di} repository,
+folder \path{src/incremental_batches/audit_validation/Appendix_v1.1.0}.
+\url{https://github.com/shannon-barrow/databricks-tpc-di}
+
+\bibitem{r5}
+ClickHouse documentation. \url{https://clickhouse.com/docs}
+
+\bibitem{r6}
+E.~Zimányi. INFO-H-419 Data Warehouses, course slides (dw04 Dimension Changes,
+dw05 ETL). Université libre de Bruxelles.
+\url{https://cs.ulb.ac.be/public/teaching/infoh419}
+
+\bibitem{r7}
+Project repository: scripts, DDL, ETL, results and analysis.
+\url{https://github.com/cyyr1l/info-h419-clickhouse}
+
+\end{thebibliography}
+
+% =====================================================================
+\appendix
+
+\section{Reproduction Guide}
+\label{app:reproduction}
+% Writer: Cyril (role 1).
+\todo{reproduction guide}
+% Requirements, the one-command run, expected time and disk space per SF.
+
+\section{Changes to the TPC-DI SQL}
+\label{app:sql}
+% Writer: Paula (role 4).
+\todo{changes to the audit, validation and visibility SQL}
+% Every change made to the queries of Appendices A--C to run them on
+% ClickHouse, with its reason (\S3.4.11)~\cite{r4}.
+
+\end{document}
