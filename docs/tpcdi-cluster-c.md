@@ -154,3 +154,44 @@ We read the DIGen output with ClickHouse `file()` (CSV format, `|` delimiter). E
   - SK_CustomerID and SK_AccountID point to versions valid on the SK_DateID date.
   - SK_DateID lies inside the batch window.
   - Three distinct BatchIDs.
+
+## 8. Historical load: files and test
+| File | What it does |
+|---|---|
+| `part2-tpcdi/ddl/staging_cluster_c.sql` | `stg_Trade`, `stg_TradeHistory`, `stg_CashTransaction`, `stg_HoldingHistory` (one table per source file, with `CDC_FLAG`/`CDC_DSN` for the incremental files) |
+| `part2-tpcdi/ddl/cluster_c.sql` | DimTrade (`ReplacingMergeTree`, no version column), FactCashBalances, FactHoldings |
+| `part2-tpcdi/etl/staging_cluster_c_historical.sql` | loads the four Batch1 files; parameter `{batch_dir:String}`, e.g. `data/tpcdi/sf10/Batch1` |
+| `part2-tpcdi/etl/dimtrade_historical.sql` | DimTrade and its two alerts |
+| `part2-tpcdi/etl/factcashbalances_historical.sql` | daily running balance per account |
+| `part2-tpcdi/etl/factholdings_historical.sql` | holdings from DimTrade (`FINAL`) |
+| `part2-tpcdi/scripts/test_cluster_c.py` | runs all of the above on DIGen data and checks the result |
+
+**Order inside the Historical Load:**
+1. the staging load;
+2. DimTrade, after cluster A's DimSecurity and cluster B's DimAccount;
+3. FactCashBalances;
+4. FactHoldings.
+
+**What cluster C reads from the other clusters.** Spec column names, with the type each column must have:
+- `DimDate(SK_DateID UInt64, DateValue Date32)`
+- `DimTime(SK_TimeID UInt64, TimeValue Time64(3))`: TIME maps to `Time64(3)`
+- `StatusType(ST_ID, ST_NAME)` and `TradeType(TT_ID, TT_NAME)`, as `String`
+- `DimSecurity(SK_SecurityID, Symbol, SK_CompanyID, EffectiveDate Date32, EndDate Date32)`
+- `DimAccount(SK_AccountID, AccountID, SK_BrokerID, SK_CustomerID, EffectiveDate Date32, EndDate Date32)`
+
+  These two dimensions must have contiguous versions, as the audit requires. The `ASOF JOIN` on EffectiveDate then finds the version valid on a date.
+- `DImessages`: the spec columns. `MessageDateAndTime` is `DateTime64(3)`.
+
+**Test:** `python3 part2-tpcdi/scripts/test_cluster_c.py --sf 10`, with the ClickHouse container running and DIGen output in `data/tpcdi/sf10/`.
+- The test uses a throwaway database. DimDate, DimTime, StatusType and TradeType come from the real files.
+- DimSecurity and DimAccount are synthetic history-tracking stand-ins: a quarter of the symbols and a third of the accounts get a second version.
+- 19 checks:
+  - the DIGen audit values (T_NEW, T_CanceledTrades, both alert counts, HH_RECORDS);
+  - the cluster C tests of `tpcdi_audit.sql`;
+  - version validity with an exclusive end date;
+  - the running balance across a surrogate-key change.
+- On 10 Nov, all 19 checks pass at SF 3 and SF 10 on ClickHouse 26.8.24.9.
+
+**Still to do:**
+- The incremental batches (weeks 8–9). The SF 10 facts in section 6 already fix the rules: collapse the rows of each trade in CDC_DSN order, and update DimTrade before FactHoldings.
+- Step timing, once the orchestrator exists.
