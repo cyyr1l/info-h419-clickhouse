@@ -117,12 +117,24 @@ These are reading notes for the historical load (weeks 6–7) and the incrementa
 - **Rules:** as in the historical load, from `HoldingHistory.txt` and DimTrade (read with FINAL). Rows are only appended, with BatchID 2 or 3.
 - **SK_DateID and SK_TimeID:** §4.6.9.2 says they come "from DimTrade", but DimTrade only has the create and close keys. As in §4.5.10.2, we use SK_CloseDateID and SK_CloseTimeID. The audit test "FactHoldings CurrentTradeID" confirms this.
 
-## 6. To check on the SF 10 data
-- Every trade has a creating history row ('PNDG', or 'SBMT' for TMB/TMS), because Table 3.2.10 declares SK_CreateDateID NOT NULL.
-- Can a T_ID appear more than once in one incremental batch?
-- Can a dimension have two versions on the same day (EffectiveDate = EndDate)? An `ASOF JOIN` may then pick the zero-length version, so drop those versions from the right side of the join.
-- Can HH_AFTER_QTY be negative? S_QTY_T is unsigned, but CurrentHolding may be negative, so use signed types in staging.
-- Does every HH_T_ID have a DimTrade row with a close date? FactHoldings needs one, because its SK_DateID is NOT NULL.
+## 6. Checked on the SF 10 data (10 Nov)
+We read the DIGen output with ClickHouse `file()` (CSV format, `|` delimiter). Every count below matches DIGen's audit files.
+
+- **Line endings:** the files use CRLF. ClickHouse's CSV format handles this: no `\r` is left in the last field. TSV would keep the `\r`.
+- **Every trade has exactly one creating row in TradeHistory:**
+  - It is 'PNDG' for limit orders (TLB, TLS) and 'SBMT' for market orders (TMB, TMS). So SK_CreateDateID is always set.
+  - Patterns in Batch1: limit orders go PNDG>SBMT>CMPT, PNDG>CNCL, or stay at PNDG (still open). Market orders go SBMT>CMPT or stay at SBMT. There are no Stop Loss (TSL) trades.
+  - The last history status always equals T_ST_ID.
+- **Batch1 audit counts, reproduced with the rules of section 4:** 76,173 canceled trades, 135 invalid commissions, 111 invalid fees.
+- **A T_ID often appears several times in one incremental batch** (660 of the 1,143 trades in Batch2).
+  - Patterns per trade in Batch2: `I:PNDG` (431), `U:SBMT > U:CMPT` (380), `I:SBMT > U:CMPT` (278), `U:CNCL` (47), and a few others.
+  - Updates only touch open trades (PNDG or SBMT), created in an earlier batch or earlier in the same batch.
+  - So collapse the rows of each trade in `CDC_DSN` order before writing DimTrade.
+- **Incremental counts:** inserts per batch equal `T_NEW` (712 in Batch2 and in Batch3). There are 47 and 42 canceled trades, and no invalid commission or fee.
+- **Quantities:** HH_BEFORE_QTY and HH_AFTER_QTY are never negative (they range from 0 to 10,000). CurrentHolding is SNUM(6) in the DW, so keep it signed (`Int32`).
+- **Every HH_T_ID is a completed trade:** in Batch1 it has a 'CMPT' row in TradeHistory, and in Batch2 a CMPT row in the same Trade.txt. So FactHoldings always gets a close date. In an incremental batch, DimTrade must be updated before FactHoldings.
+- **CashTransaction:** the 1,203,664 rows of Batch1 form 1,087,041 (account, day) pairs, so the daily sum matters. Each incremental batch covers exactly its Batch Date (Batch2: 2017-07-08).
+- **Zero-length dimension versions cannot occur.** The audit requires daily consolidation (§4.4.1.5), so an `ASOF JOIN` on EffectiveDate finds exactly one version.
 
 ## 7. What the audit checks (`tpcdi_audit.sql`)
 - **DimTrade:**

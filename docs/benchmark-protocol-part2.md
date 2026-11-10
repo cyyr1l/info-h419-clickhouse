@@ -41,7 +41,15 @@ Our results are *derived from TPC-DI*, not official TPC results. Every deviation
 
   Roadmap: try SF 100 at the end of week 7 (historical load only), and decide by Sun 6 Dec.
 - **Series:** the reference SF and three smaller SFs (0.1×, 0.2× and 0.5× the reference), all ≥ 3. Part I taught us to check the generator before fixing the series. Using `digen_report.txt` and the audit files, check that every table grows with the SF.
-- **Generation:** DIGen is single-threaded, so the whole series is generated as soon as the reference is fixed. Expected size: about 1 GB of raw files at SF 10 and 10 GB at SF 100. These are roadmap estimates; ① checks them with SF 10.
+- **Generation (measured on 10 Nov):**
+  - PDGF, the engine behind DIGen, is multi-threaded. SF 3 (267 MiB) and SF 10 (960 MiB) each take about 12 s, so generation is not a bottleneck.
+  - Batch2 and Batch3 are tiny, about 0.4% of the Batch1 rows (SF 10: 15,980,433 / 67,451 / 67,381).
+- **DIGen on Linux:** four traps.
+  1. DIGen runs PDGF from a lowercase `pdgf` folder, while the zip has `PDGF`; a symlink `pdgf -> PDGF` fixes it.
+  2. PDGF's licence prompt needs ENTER, then `YES`.
+  3. stdin must stay open until `digen_report.txt` exists. At EOF, DIGen feeds "null" commands to PDGF's shell, which aborts.
+  4. DIGen exits 0 even when it fails, so check `digen_report.txt` instead of the exit code.
+- **Licence:** the PDGF licence forbids redistribution, so DIGen and PDGF stay out of the repository (unlike the TPC-DS kit). People who reproduce our results download the TPC-DI tools from tpc.org.
 
 ## 3. Benchmark run (§7.2)
 One command starts a Benchmark Run, and the run needs no manual intervention (§7.2.2.2). Each phase starts when the previous one ends (§7.2.2):
@@ -105,7 +113,7 @@ The spec only times phases. To see which steps dominate, the orchestrator also t
 - **Throughputs:** TH = RH / EH, TI1 = RI1 / max(EI1, 1800) and TI2 = RI2 / max(EI2, 1800) (§7.5).
 - **TPC_DI_RPS = trunc( √(TH × min(TI1, TI2)) ):** the geometric mean of TH and the slower incremental throughput (§7.6.1).
 - **The 1800-second floor:** an incremental phase shorter than 30 minutes counts as 1800 s. The spec's rationale is that the benchmark targets incremental phases of at least 1800 s.
-  - Our incremental phases will probably take seconds to minutes. Then min(TI1, TI2) = RI/1800, and TPC_DI_RPS ≈ √(TH × RI / 1800). The metric then grows with the SF however fast the updates run.
+  - Batch2 and Batch3 hold about 0.4% of the rows of Batch1, so our incremental phases will take seconds. Then min(TI1, TI2) = RI/1800, and TPC_DI_RPS ≈ √(TH × RI / 1800). The metric then grows with the SF however fast the updates run.
   - We therefore also report RI1/EI1 and RI2/EI2, labelled as our own unfloored throughputs, as well as the phase times themselves.
 - **No price/performance metric** (§7.6.2), since there is no pricing.
 
