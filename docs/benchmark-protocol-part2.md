@@ -64,9 +64,10 @@ PCR is the phase completion record that the batch validation query writes into D
 
   So every run is a cold run.
 - **Initialization:**
-  - Create the database with all staging and DW tables (③'s DDL, Clause 3).
+  - Create the database with all staging and DW tables (Clause 3). ③ writes the DDL of the dimensions; ④ writes DImessages and Audit.
   - Write a 'Status' message with BatchID 0.
   - Run the batch validation query, which writes the PCR.
+  - The audit checks that every count at BatchID 0 is 0 ("DImessages initial condition"). So every DW table stays empty here, the reference tables included (DimDate, DimTime, StatusType…): they are loaded in the Historical Load.
 - **Everything that reads source files is timed**, because Initialization may not read the Staging Area (§7.2.3.4). This covers loading the files into staging tables, converting `CustomerMgmt.xml` and cutting the FINWIRE records. The XML converter streams its rows into ClickHouse, or writes them outside the Staging Area.
 - **Order (§4.3.3):** within a phase, the steps follow the data dependencies. For example, DimSecurity and DimAccount come before DimTrade, and DimTrade before FactHoldings. No phase reads a later batch (§4.3.5.5).
 - **From IU1 on, the data warehouse stays queryable (§4.3.5.8):** committed rows must stay visible to other sessions. Section 4.4 explains what this means for our update strategy.
@@ -81,8 +82,12 @@ PCR is the phase completion record that the batch validation query writes into D
 ### 4.1 Official phase times (§7.5)
 - **CT of a phase:** the `MessageDateAndTime` of its PCR row in DImessages (MessageType 'PCR', the BatchID of the phase). The batch validation query writes this row at the end of the phase (Appendix B), and its own run time is part of the phase (§7.4.2).
 - **EH = CT1 − CT0, EI1 = CT2 − CT1 and EI2 = CT3 − CT2**, in seconds, reported to 0.1 s and rounded up (§7.1.1).
-- **Precision:** in ClickHouse, the spec's `CURRENT_TIMESTAMP` is a `DateTime`, which only has 1-second resolution (checked on 26.8). So `MessageDateAndTime` is a `DateTime64(3)` (③), and the ported queries use `now64(3)` (④).
+- **Precision:** in ClickHouse, the spec's `CURRENT_TIMESTAMP` is a `DateTime`, which only has 1-second resolution (checked on 26.8). So `MessageDateAndTime` is a `DateTime64(3)` and the ported queries use `now64(3)` (④, who also writes the DImessages DDL).
 - **BatchID of the PCR:** Appendix B takes `max(BatchID)` from DImessages as the BatchID of the phase. A phase that logged no alert would therefore get the BatchID of the previous phase. To avoid this, the orchestrator writes a 'Status' message with the new BatchID at the start of each phase. 'Status' is one of the message types the spec defines (§3.2.8).
+- **What the audit checks in DImessages:**
+  - 4 distinct BatchIDs (0–3), each with one PCR;
+  - exactly 24 'Validation' rows per batch, so the ported validation query keeps all 24 counts and runs once per phase;
+  - alerts are counted by exact `MessageText` with MessageType 'Alert', e.g. 'Invalid trade commission'.
 
 ### 4.2 Step times (our addition)
 The spec only times phases. To see which steps dominate, the orchestrator also times every step:

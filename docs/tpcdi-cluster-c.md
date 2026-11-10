@@ -115,7 +115,7 @@ These are reading notes for the historical load (weeks 6–7) and the incrementa
 
 ### FactHoldings (§4.6.9)
 - **Rules:** as in the historical load, from `HoldingHistory.txt` and DimTrade (read with FINAL). Rows are only appended, with BatchID 2 or 3.
-- **SK_DateID and SK_TimeID:** §4.6.9.2 says they come "from DimTrade", but DimTrade only has the create and close keys. As in §4.5.10.2, we use SK_CloseDateID and SK_CloseTimeID.
+- **SK_DateID and SK_TimeID:** §4.6.9.2 says they come "from DimTrade", but DimTrade only has the create and close keys. As in §4.5.10.2, we use SK_CloseDateID and SK_CloseTimeID. The audit test "FactHoldings CurrentTradeID" confirms this.
 
 ## 6. To check on the SF 10 data
 - Every trade has a creating history row ('PNDG', or 'SBMT' for TMB/TMS), because Table 3.2.10 declares SK_CreateDateID NOT NULL.
@@ -123,3 +123,22 @@ These are reading notes for the historical load (weeks 6–7) and the incrementa
 - Can a dimension have two versions on the same day (EffectiveDate = EndDate)? An `ASOF JOIN` may then pick the zero-length version, so drop those versions from the right side of the join.
 - Can HH_AFTER_QTY be negative? S_QTY_T is unsigned, but CurrentHolding may be negative, so use signed types in staging.
 - Does every HH_T_ID have a DimTrade row with a close date? FactHoldings needs one, because its SK_DateID is NOT NULL.
+
+## 7. What the audit checks (`tpcdi_audit.sql`)
+- **DimTrade:**
+  - The validation 'Row count' of DimTrade equals the sum of `T_NEW` up to the batch, and `count(distinct TradeID) = count(*)`. Both need FINAL on the ReplacingMergeTree (`final = 1`).
+  - Status values: 'Canceled', 'Pending', 'Submitted', 'Active', 'Completed'. Type values: 'Market Buy', 'Market Sell', 'Stop Loss', 'Limit Sell', 'Limit Buy'. The comparison is exact and ClickHouse is case-sensitive, so copy the StatusType and TradeType names as they are.
+  - The number of 'Canceled' trades equals `T_CanceledTrades`.
+  - Alerts (MessageType 'Alert'): the count of 'Invalid trade commission' equals `T_InvalidCommision`, and the count of 'Invalid trade fee' equals `T_InvalidCharge`.
+  - SK_BrokerID, SK_CompanyID, SK_SecurityID, SK_CustomerID and SK_AccountID point to a dimension version valid on the create date (EffectiveDate ≤ create date ≤ EndDate). So every trade needs SK_CreateDateID.
+  - Create and close dates fall inside the batch window. Limit orders may have create dates back to the first day of Batch1. SK_CloseDateID ≥ SK_CreateDateID.
+  - Three distinct BatchIDs.
+- **FactHoldings:**
+  - The row count grows by `HH_RECORDS` in every batch: append only, one row per HoldingHistory row.
+  - `CurrentTradeID` joins DimTrade with SK_DateID = SK_CloseDateID and SK_TimeID = SK_CloseTimeID.
+  - Each dimension version has EffectiveDate ≤ the holding date, and SK_DateID lies inside the batch window.
+  - Three distinct BatchIDs.
+- **FactCashBalances:**
+  - SK_CustomerID and SK_AccountID point to versions valid on the SK_DateID date.
+  - SK_DateID lies inside the batch window.
+  - Three distinct BatchIDs.
