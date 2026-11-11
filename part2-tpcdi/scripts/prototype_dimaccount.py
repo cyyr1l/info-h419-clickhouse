@@ -113,35 +113,35 @@ def main():
             assert count == expected_columns, (table, count)
 
         load([
-            [1001, "2015-01-01 09:00:00.000", 1, 11, 101, "ACTIVE", "Initial", 0],
-            [1001, "2015-01-02 10:00:00.000", 2, 11, 101, "ACTIVE", "Morning", 0],
-            [1001, "2015-01-02 10:00:00.000", 3, 12, 101, "ACTIVE", None, 1],
-            [1001, "2015-01-03 11:00:00.000", 4, 12, 102, "ACTIVE", None, 1],
-            [1002, "2015-01-01 09:00:00.000", 5, 11, 201, "ACTIVE", "Other", None],
+            [1001, "2015-01-01 09:00:00.000", 1, 11, 101, "Active", "Initial", 0],
+            [1001, "2015-01-02 10:00:00.000", 2, 11, 101, "Active", "Morning", 0],
+            [1001, "2015-01-02 10:00:00.000", 3, 12, 101, "Active", None, 1],
+            [1001, "2015-01-03 11:00:00.000", 4, 12, 102, "Active", None, 1],
+            [1002, "2015-01-01 09:00:00.000", 5, 11, 201, "Active", "Other", None],
         ])
         run_file("etl/dimaccount_historical.sql")
         expected = [
-            (1, 1001, 11, 101, "ACTIVE", "Initial", 0, 0, 1, "2015-01-01", "2015-01-02"),
-            (2, 1001, 12, 101, "ACTIVE", None, 1, 0, 1, "2015-01-02", "2015-01-03"),
-            (3, 1001, 12, 102, "ACTIVE", None, 1, 1, 1, "2015-01-03", "9999-12-31"),
-            (4, 1002, 11, 201, "ACTIVE", "Other", None, 1, 1, "2015-01-01", "9999-12-31"),
+            (1, 1001, 11, 101, "Active", "Initial", 0, 0, 1, "2015-01-01", "2015-01-02"),
+            (2, 1001, 12, 101, "Active", None, 1, 0, 1, "2015-01-02", "2015-01-03"),
+            (3, 1001, 12, 102, "Active", None, 1, 1, 1, "2015-01-03", "9999-12-31"),
+            (4, 1002, 11, 201, "Active", "Other", None, 1, 1, "2015-01-01", "9999-12-31"),
         ]
         check("DimAccount", expected)
         print("PASS historical: daily grain, timestamp ties, NULL, customer-key change")
 
         load([
-            [1001, "2015-01-04 09:00:00.000", 1, 12, 103, "ACTIVE", None, 1],
-            [1001, "2015-01-04 15:00:00.000", 2, 12, 103, "ACTIVE", "Updated", 2],
-            [1003, "2015-01-04 10:00:00.000", 3, 11, 301, "ACTIVE", "New", 0],
+            [1001, "2015-01-04 09:00:00.000", 1, 12, 103, "Active", None, 1],
+            [1001, "2015-01-04 15:00:00.000", 2, 12, 103, "Active", "Updated", 2],
+            [1003, "2015-01-04 10:00:00.000", 3, 11, 301, "Active", "New", 0],
         ])
         run_file("etl/dimaccount_incremental.sql", batch=2, batch_date="2015-01-04")
         # The old table must still be readable and identical before the swap.
         check("DimAccount", expected)
         expected = expected[:2] + [
-            (3, 1001, 12, 102, "ACTIVE", None, 1, 0, 1, "2015-01-03", "2015-01-04"),
-            (5, 1001, 12, 103, "ACTIVE", "Updated", 2, 1, 2, "2015-01-04", "9999-12-31"),
+            (3, 1001, 12, 102, "Active", None, 1, 0, 1, "2015-01-03", "2015-01-04"),
+            (5, 1001, 12, 103, "Active", "Updated", 2, 1, 2, "2015-01-04", "9999-12-31"),
             expected[3],
-            (6, 1003, 11, 301, "ACTIVE", "New", 0, 1, 2, "2015-01-04", "9999-12-31"),
+            (6, 1003, 11, 301, "Active", "New", 0, 1, 2, "2015-01-04", "9999-12-31"),
         ]
         check("DimAccount_next", expected)
         query("EXCHANGE TABLES DimAccount AND DimAccount_next")
@@ -149,12 +149,12 @@ def main():
         query("DROP TABLE DimAccount_next")
         print("PASS batch 2: preserved history/keys, new account, checked rebuild, EXCHANGE")
 
-        load([[1002, "2015-01-05 10:00:00.000", 1, 11, 201, "INACTIVE", "Other", None]])
+        load([[1002, "2015-01-05 10:00:00.000", 1, 11, 201, "Inactive", "Other", None]])
         run_file("etl/dimaccount_incremental.sql", batch=3, batch_date="2015-01-05")
         check("DimAccount", expected)
         expected = expected[:4] + [
-            (4, 1002, 11, 201, "ACTIVE", "Other", None, 0, 1, "2015-01-01", "2015-01-05"),
-            (7, 1002, 11, 201, "INACTIVE", "Other", None, 1, 3, "2015-01-05", "9999-12-31"),
+            (4, 1002, 11, 201, "Active", "Other", None, 0, 1, "2015-01-01", "2015-01-05"),
+            (7, 1002, 11, 201, "Inactive", "Other", None, 1, 3, "2015-01-05", "9999-12-31"),
             expected[5],
         ]
         check("DimAccount_next", expected)

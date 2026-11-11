@@ -26,13 +26,30 @@ do not enforce uniqueness or foreign keys; ETL validation must enforce them.
 The two other DW tables are created and checked structurally; their transforms
 are not part of this prototype. Prospect updates will require a rebuild strategy.
 
-## Run on the Mac
+## Shared ClickHouse types
 
-Keep the whole extracted folder together. With the existing
-`infoh419-clickhouse` container running, execute from this folder:
+| TPC-DI type | ClickHouse type |
+| --- | --- |
+| SK_T, IDENT_T, TRADE_T | UInt64 |
+| BatchID | UInt32 |
+| DATE | Date32 |
+| DATETIME | DateTime64(3) |
+| NUM(m,n), SNUM(m,n) with fractional scale | Decimal(m,n) |
+| Integer NUM / SNUM fields | Unsigned / signed integer wide enough for the specified range |
+| CHAR(n) | String |
+| BOOLEAN | Bool |
+
+Use Nullable only where the specification allows NULL. In ETL, use
+toDate32() for dates. Avoid Date, DateTime and toDate(), which can silently
+clamp values. Use the exact StatusType names Active and Inactive for
+DimAccount and DimCustomer to match the audit.
+
+## Run the prototype
+
+With the infoh419-clickhouse container running, run from the repository root:
 
 ```sh
-python3 scripts/prototype_dimaccount.py
+python3 part2-tpcdi/scripts/prototype_dimaccount.py
 ```
 
 Only Python's standard library and Docker CLI are required. It creates a unique
@@ -84,12 +101,11 @@ NULL values, source ordering and both swaps. It also verifies that the old
 table stays unchanged while its replacement is being constructed. It does not
 test crash recovery, concurrent readers, real generated data or benchmark speed.
 
-## Validation performed here
+## Validation
 
-The SQL and complete synthetic scenario passed on embedded ClickHouse 26.9.2.1
-(chDB). The team's Docker version 26.8.24.9 must still be checked on the Mac
-using the default command above. Passing a newer embedded engine does not
-establish compatibility or performance on the pinned engine.
+The synthetic scenario passed on the team's ClickHouse 26.8.24.9 Docker
+image, covering historical loading and both incremental batches.
+Validation with generated TPC-DI data and the official audit is still pending.
 
 References: TPC-DI 1.1.0 clauses 3.2.1, 3.2.4, 3.2.15, 3.4.5,
 4.4.1–4.4.2 and 4.5.1; ClickHouse EXCHANGE documentation:
