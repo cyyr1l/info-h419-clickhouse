@@ -151,7 +151,11 @@ def main(argv=None):
         check(f"{table} rows = lines of {source}", count(table), line_count(batch_dir / source))
     check("DimBroker rows = HR_BROKERS", count("DimBroker"), audit.get(("DimBroker", "HR_BROKERS"), "missing"))
     check("DimCompany rows = FW_CMP", count("DimCompany"), audit.get(("DimCompany", "FW_CMP"), "missing"))
-    check("DimSecurity rows = FW_SEC", count("DimSecurity"), audit.get(("DimSecurity", "FW_SEC"), "missing"))
+    fw_sec = audit.get(("DimSecurity", "FW_SEC"), 0)
+    sec_rows = int(count("DimSecurity"))
+    check("DimSecurity rows >= FW_SEC (new versions when the company changes)",
+          sec_rows >= fw_sec, True)
+    print(f"        DimSecurity rows: {sec_rows}, FW_SEC: {fw_sec}")
     check("Financial rows = FW_FIN", count("Financial"), audit.get(("Financial", "FW_FIN"), "missing"))
 
     for table, key, sk in (("DimCompany", "CompanyID", "SK_CompanyID"),
@@ -164,6 +168,10 @@ def main(argv=None):
               count(table, "IsCurrent != (EndDate = toDate32('9999-12-31'))"), 0)
         check(f"{table} versions contiguous", ch.query(contiguity_sql(table, key, sk), db), 0)
         check(f"{table} Status in Active/Inactive", count(table, "Status NOT IN ('Active', 'Inactive')"), 0)
+
+    check("DimSecurity versions inside their DimCompany version ('DimSecurity SK_CompanyID')",
+          ch.query("SELECT count() FROM DimSecurity AS s INNER JOIN DimCompany AS c ON c.SK_CompanyID = s.SK_CompanyID "
+                   "WHERE NOT (c.EffectiveDate <= s.EffectiveDate AND s.EndDate <= c.EndDate)", db), 0)
 
     print("Information:")
     print("  invalid SPrating alerts in DImessages:",

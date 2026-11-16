@@ -166,26 +166,45 @@ SELECT now64(3), 1, 'DimCompany', 'Invalid SPRating', 'Alert',
 FROM stg_FinWire_CMP
 WHERE NOT has(ratings, SPrating);
 
--- 5. DimSecurity (4.5.10): one version per SEC record, in PTS order per Symbol, contiguous.
--- SK_CompanyID: the DimCompany version (matched by CIK or by name) valid on the record's date.
+-- 5. DimSecurity (4.5.10): one version per SEC record, in PTS order per Symbol. The company
+-- (matched by CIK or by name) is the DimCompany version valid on the record's date.
+-- When the company gets a new version, the security needs one too (4.4.1.6.1, same rule as
+-- DimAccount after a DimCustomer update): each SEC version is cut at every DimCompany version
+-- of its company that it overlaps. The versions stay contiguous, each inside the validity of
+-- its DimCompany version, so DimSecurity has at least FW_SEC rows.
 INSERT INTO DimSecurity
-SELECT row_number() OVER (ORDER BY s.Symbol, s.PTS, s.File),
-    s.Symbol, s.IssueType, st.ST_NAME, s.Name, s.ExID, c.SK_CompanyID, s.ShOut,
-    s.FirstTradeDate, s.FirstTradeExchg, s.Dividend,
-    s.NextDate = toDate32('9999-12-31'), 1, s.EffectiveDate, s.NextDate
+SELECT row_number() OVER (ORDER BY v.Symbol, v.EffectiveDate),
+    v.Symbol, v.IssueType, st.ST_NAME, v.Name, v.ExID, v.SK_CompanyID, v.ShOut,
+    v.FirstTradeDate, v.FirstTradeExchg, v.Dividend,
+    v.EndDate = toDate32('9999-12-31'), 1, v.EffectiveDate, v.EndDate
 FROM
 (
-    SELECT *, leadInFrame(EffectiveDate, 1, toDate32('9999-12-31'))
-        OVER (PARTITION BY Symbol ORDER BY PTS, File ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS NextDate
-    FROM stg_FinWire_SEC
-) AS s
-ASOF INNER JOIN
-(
-    SELECT SK_CompanyID, EffectiveDate, concat('CIK:', toString(CompanyID)) AS CoKey FROM DimCompany
-    UNION ALL
-    SELECT SK_CompanyID, EffectiveDate, concat('NAME:', Name) AS CoKey FROM DimCompany
-) AS c ON c.CoKey = s.CoKey AND s.EffectiveDate >= c.EffectiveDate
-INNER JOIN StatusType AS st ON st.ST_ID = s.Status;
+    SELECT s.Symbol AS Symbol, s.IssueType AS IssueType, s.Status AS Status, s.Name AS Name,
+        s.ExID AS ExID, s.ShOut AS ShOut, s.FirstTradeDate AS FirstTradeDate,
+        s.FirstTradeExchg AS FirstTradeExchg, s.Dividend AS Dividend,
+        cv.SK_CompanyID AS SK_CompanyID,
+        greatest(s.EffectiveDate, cv.EffectiveDate) AS EffectiveDate,
+        least(s.NextDate, cv.EndDate) AS EndDate
+    FROM
+    (
+        SELECT sec.*, c.CompanyID AS CompanyID
+        FROM
+        (
+            SELECT *, leadInFrame(EffectiveDate, 1, toDate32('9999-12-31'))
+                OVER (PARTITION BY Symbol ORDER BY PTS, File ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS NextDate
+            FROM stg_FinWire_SEC
+        ) AS sec
+        ASOF INNER JOIN
+        (
+            SELECT CompanyID, EffectiveDate, concat('CIK:', toString(CompanyID)) AS CoKey FROM DimCompany
+            UNION ALL
+            SELECT CompanyID, EffectiveDate, concat('NAME:', Name) AS CoKey FROM DimCompany
+        ) AS c ON c.CoKey = sec.CoKey AND sec.EffectiveDate >= c.EffectiveDate
+    ) AS s
+    INNER JOIN DimCompany AS cv ON cv.CompanyID = s.CompanyID
+    WHERE cv.EffectiveDate < s.NextDate AND cv.EndDate > s.EffectiveDate
+) AS v
+INNER JOIN StatusType AS st ON st.ST_ID = v.Status;
 
 -- 6. Financial (4.5.11): one row per FIN record, with the DimCompany version valid on its date.
 INSERT INTO Financial
