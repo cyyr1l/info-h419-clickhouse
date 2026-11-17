@@ -70,5 +70,20 @@ services:
     volumes:
       - ../data:/data
 
+  # TPC-DI generator (DIGen 1.1.0, Java 8). Not started by "docker compose up":
+  # run through part2-tpcdi/scripts/gen_data.py --sf N.
+  # Built from the DIGen zip in tools/ (not in Git, see tools/README.md).
+  tpcdi-digen:
+    build:
+      context: ../tools
+      dockerfile: ../docker/tpcdi-digen/Dockerfile
+    image: infoh419/tpcdi-digen:1.1.0
+    profiles: ["tools"]
+    # Generated files belong to the host user instead of root (Linux/WSL2).
+    user: "${UID:-1000}:${GID:-1000}"
+    stdin_open: true
+    volumes:
+      - ../data:/data
+
 volumes:
   clickhouse-data:
