@@ -203,9 +203,101 @@ Our results are derived from TPC-DI and are not official TPC benchmark results~\
 
 \subsubsection{Cluster C: DimTrade, FactCashBalances, FactHoldings}
 % Writer: Bao Anh (role 2). Notes: docs/tpcdi-cluster-c.md.
-\todo{cluster C}
-% Status history of a trade; dimension keys taken when a trade first
-% appears; running cash balance per account; holdings from DimTrade.
+Cluster~C loads the trades of the brokerage (\S4.5.8--4.5.10). It reads
+four source files: \path{Trade.txt}, \path{TradeHistory.txt},
+\path{CashTransaction.txt} and \path{HoldingHistory.txt}. It also looks up
+dimensions of the other clusters: \code{DimDate}, \code{DimTime},
+\code{StatusType}, \code{TradeType} and \code{DimSecurity} (cluster~A), and
+\code{DimAccount} (cluster~B). It therefore runs last in every phase, with
+\code{DimTrade} before \code{FactHoldings}. Each file is loaded as is into a
+staging table (\code{stg\_Trade}, \code{stg\_TradeHistory}, \ldots), and one
+\code{INSERT ... SELECT} per target table builds the data warehouse.
+Table~\ref{tab:cluster-c-mapping} gives the mapping of the Historical Load.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Source to target mapping of cluster~C in the Historical Load (Batch1).}
+\label{tab:cluster-c-mapping}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{5.2cm} L}
+\toprule
+\textbf{Target column(s)} & \textbf{Source and rule} \\
+\midrule
+\multicolumn{2}{l}{\textbf{\code{DimTrade}}: one row per trade (\S4.5.8)} \\
+\code{TradeID}, \code{CashFlag}, \code{Quantity}, \code{BidPrice}, \code{ExecutedBy}, \code{TradePrice}, \code{Fee}, \code{Commission}, \code{Tax}
+  & Copied from \code{T\_ID}, \code{T\_IS\_CASH}, \code{T\_QTY}, \code{T\_BID\_PRICE}, \code{T\_EXEC\_NAME}, \code{T\_TRADE\_PRICE}, \code{T\_CHRG}, \code{T\_COMM}, \code{T\_TAX}. \\
+\code{Status}, \code{Type}
+  & \code{ST\_NAME} and \code{TT\_NAME} of \code{StatusType} and \code{TradeType}, looked up with \code{T\_ST\_ID} and \code{T\_TT\_ID}. \\
+\code{SK\_CreateDateID}, \code{SK\_CreateTimeID}
+  & \code{TH\_DTS} of the creating history row, truncated to the second: the \code{PNDG} row, or the \code{SBMT} row of a market order (\code{TMB}, \code{TMS}). \\
+\code{SK\_CloseDateID}, \code{SK\_CloseTimeID}
+  & \code{TH\_DTS} of the \code{CMPT} or \code{CNCL} row; \code{NULL} while the trade is open. \\
+\code{SK\_SecurityID}, \code{SK\_CompanyID}
+  & The \code{DimSecurity} version of \code{T\_S\_SYMB} valid when the trade first appears (its earliest \code{TH\_DTS}). \\
+\code{SK\_AccountID}, \code{SK\_CustomerID}, \code{SK\_BrokerID}
+  & The \code{DimAccount} version of \code{T\_CA\_ID} valid at the same time. \\
+\midrule
+\multicolumn{2}{l}{\textbf{\code{FactCashBalances}}: one row per account and day with transactions (\S4.5.9)} \\
+\code{Cash}
+  & Running total of the account: the sum of the daily totals of \code{CT\_AMT} up to that day. \\
+\code{SK\_AccountID}, \code{SK\_CustomerID}
+  & The \code{DimAccount} version of \code{CT\_CA\_ID} valid on that day. \\
+\code{SK\_DateID}
+  & \code{DimDate} row of the date of \code{CT\_DTS}. \\
+\midrule
+\multicolumn{2}{l}{\textbf{\code{FactHoldings}}: one row per \path{HoldingHistory.txt} row (\S4.5.10)} \\
+\code{TradeID}, \code{CurrentTradeID}, \code{CurrentHolding}
+  & Copied from \code{HH\_H\_T\_ID}, \code{HH\_T\_ID}, \code{HH\_AFTER\_QTY}. \\
+\code{SK\_CustomerID}, \code{SK\_AccountID}, \code{SK\_SecurityID}, \code{SK\_CompanyID}, \code{CurrentPrice}
+  & From the \code{DimTrade} row of \code{HH\_T\_ID}; \code{CurrentPrice} is its \code{TradePrice}. \\
+\code{SK\_DateID}, \code{SK\_TimeID}
+  & \code{SK\_CloseDateID} and \code{SK\_CloseTimeID} of that \code{DimTrade} row. \\
+\midrule
+\code{BatchID} (all three tables) & 1. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two alerts go to \code{DImessages} (MessageType `Alert', MessageSource
+`DimTrade'): `Invalid trade commission' when \code{T\_COMM} exceeds
+\code{T\_TRADE\_PRICE}~$\times$~\code{T\_QTY}, and `Invalid trade fee' when
+\code{T\_CHRG} does. The audit counts them by their exact text.
+
+The rules that needed care:
+\begin{itemize}
+  \item \textbf{Status history of a trade.} \path{TradeHistory.txt} has one
+    row per status change. One aggregation per trade finds the creating, the
+    closing and the first row with \code{minIf}. We checked on the SF-10 data
+    that every trade has exactly one creating row, so \code{SK\_CreateDateID}
+    is always set.
+  \item \textbf{Dimension keys taken when a trade first appears.} An
+    \code{ASOF JOIN} on the natural key and \code{EffectiveDate}~$\le$~date
+    finds the version of \code{DimSecurity} and \code{DimAccount} valid at
+    that time. This relies on contiguous versions without zero-length ones,
+    which the audit requires anyway (\S4.4.1.5). The keys do not change when
+    the trade closes later.
+  \item \textbf{Running balance per account.} The window of the running sum
+    is partitioned by the natural key \code{CT\_CA\_ID}, not by
+    \code{SK\_AccountID}, because an account may get a new surrogate key
+    between two days (note of \S4.5.9.2).
+  \item \textbf{Holdings from \code{DimTrade}.} \code{DimTrade} is a
+    \code{ReplacingMergeTree}, so \code{FactHoldings} reads it with
+    \code{FINAL}. Every \code{HH\_T\_ID} is a completed trade, so its close
+    date and time always exist.
+\end{itemize}
+
+During development, \code{DimAccount} was replaced by a stand-in, because
+cluster~B was not finished. With it, the counts match the values that DIGen
+writes in its audit files at SF-3, SF-10 and SF-100. At SF-10 this means
+1{,}300{,}824 trades, 76{,}173 of them canceled, 135 and 111 alerts, and
+1{,}205{,}282 holdings.
+
+\todo{cluster C in the incremental batches}
+% Weeks 8-9. Trade.txt only (CDC_FLAG I/U), several rows per trade in one
+% batch: collapse them in CDC_DSN order. Updates insert the full new row
+% (ReplacingMergeTree); keys of new trades from the current dimension
+% versions. FactCashBalances continues from the account's last Cash
+% (through AccountID). FactHoldings only appends.
 
 \subsubsection{Cluster D: FactWatches, FactMarketHistory}
 % Writer: Paula (role 4).
