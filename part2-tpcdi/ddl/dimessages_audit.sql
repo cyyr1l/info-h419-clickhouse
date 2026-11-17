@@ -7,7 +7,7 @@
 --             MessageSource CHAR(30), MessageText CHAR(50) NOT NULL,
 --             MessageType CHAR(12) NOT NULL, MessageData CHAR(100).
 -- Notes:
---   * DateTime64(3): the spec needs 0.1 s precision; fill it with now64(3), never CURRENT_TIMESTAMP.
+--   * DateTime64(3): the spec needs 0.1 s precision, fill it with now64(3), never CURRENT_TIMESTAMP.
 --   * BatchID is UInt32 (group type rule). The audit computes BatchID - 1:
 --     in ClickHouse unsigned minus unsigned returns Int64, so 0 - 1 = -1 (no wrap-around).
 --   * MessageSource and MessageData are Nullable: the PCR record has MessageData = NULL.
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS Audit
     Date      Nullable(Date32),  -- Date32, not Date: Date starts in 1970 and Batch1 FirstDay is 1950-01-01
     Attribute String,
     Value     Nullable(Decimal(15, 0)),
-    DValue    Nullable(Decimal(15, 5))
+    DValue    Nullable(Decimal(18, 5))   -- not (15, 5): DIGen writes ONE_YEAR_IN_MILLISECONDS = 31557600000 (11 integer digits)
 )
 ENGINE = MergeTree
 ORDER BY (DataSet, Attribute);

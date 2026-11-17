@@ -9,12 +9,12 @@ CREATE TABLE IF NOT EXISTS stg_DailyMarket
     DM_CLOSE  Decimal(8, 2),
     DM_HIGH   Decimal(8, 2),
     DM_LOW    Decimal(8, 2),
-    DM_VOL    Int64           -- NUM(12); Int64 like SharesOutstanding in DimSecurity
+    DM_VOL    Int64           -- NUM(12), Int64 like SharesOutstanding in DimSecurity
 )
 ENGINE = MergeTree
 ORDER BY (DM_S_SYMB, DM_DATE);
 
--- FactMarketHistory (spec 3.2.17).
+-- FactMarketHistory.
 CREATE TABLE IF NOT EXISTS FactMarketHistory
 (
     SK_SecurityID           UInt64,

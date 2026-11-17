@@ -1,10 +1,12 @@
--- Historical load of FactMarketHistory (spec 4.5.6). Run in the DW database (e.g. tpcdi_sf10).
+-- Historical load of FactMarketHistory (spec 4.5.11). Run in the DW database (e.g. tpcdi_sf10).
 -- Needs DimSecurity, DimCompany, Financial and DimDate (cluster A) and DImessages.
+-- Parameter {batch_dir:String}: the Batch1 folder relative to ClickHouse's user_files,
+-- e.g. data/tpcdi/sf10/Batch1.
 
 -- 1. Staging: DailyMarket.txt is '|'-separated with CRLF line endings.
 TRUNCATE TABLE stg_DailyMarket;
 INSERT INTO stg_DailyMarket
-SELECT * FROM file('data/tpcdi/sf10/Batch1/DailyMarket.txt', 'CSV',
+SELECT * FROM file(concat({batch_dir:String}, '/DailyMarket.txt'), 'CSV',
                    'DM_DATE Date32, DM_S_SYMB String, DM_CLOSE Decimal(8, 2), DM_HIGH Decimal(8, 2), DM_LOW Decimal(8, 2), DM_VOL Int64')
 SETTINGS format_csv_delimiter = '|';
 
@@ -12,7 +14,7 @@ SETTINGS format_csv_delimiter = '|';
 -- 52-week high/low: highest DM_HIGH (lowest DM_LOW) from DM_DATE back to, but not including, the same date
 -- one year earlier, and the earliest date on which it occurred. A window frame has a fixed size, so both a
 -- 365-day and a 366-day frame are computed and the 366-day one is used when the year contains a 29 February.
--- max((price, -day)) gives the highest price and, among ties, the earliest day; min((price, day)) the lowest.
+-- max((price, -day)) gives the highest price and, among ties, the earliest day, and min((price, day)) the lowest.
 -- PERatio: DM_CLOSE / sum of FI_BASIC_EPS of the company over the 4 quarters before the quarter of DM_DATE.
 -- Financial is keyed by SK_CompanyID, which changes with each DimCompany version, so the quarters are
 -- grouped by CompanyID.
@@ -63,9 +65,11 @@ INNER JOIN DimDate     AS hd ON hd.DateValue = toDate32(-(if(dm.leap, dm.hi366, 
 INNER JOIN DimDate     AS ld ON ld.DateValue = toDate32((if(dm.leap, dm.lo366, dm.lo365)).2)
 LEFT JOIN eps AS e
        ON e.CompanyID = c.CompanyID AND e.QtrIdx = toYear(dm.DM_DATE) * 4 + toQuarter(dm.DM_DATE) - 1
-SETTINGS join_use_nulls = 1;
+-- query_plan_join_swap_table = false keeps DailyMarket on the probe side of the joins
+-- (SF 100: 257 s and 18.3 GiB without it, 44 s and 5.8 GiB with it).
+SETTINGS join_use_nulls = 1, query_plan_join_swap_table = false;
 
--- 3. Alert for every row without earnings (spec 4.5.6).
+-- 3. Alert for every row without earnings (spec 4.5.11.3).
 INSERT INTO DImessages (MessageDateAndTime, BatchID, MessageSource, MessageText, MessageType, MessageData)
 SELECT now64(3), 1, 'FactMarketHistory', 'No earnings for company', 'Alert', concat('DM_S_SYMB = ', s.Symbol)
 FROM FactMarketHistory AS f
