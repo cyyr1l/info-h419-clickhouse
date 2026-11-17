@@ -40,6 +40,22 @@ Our results are *derived from TPC-DI*, not official TPC results. Every deviation
   4. the historical load is short enough for 3 runs per SF (section 4.5).
 
   Roadmap: try SF 100 at the end of week 7 (historical load only), and decide by Sun 6 Dec.
+- **SF 100 trial (17 Nov), historical load only.** The machine was in use at the same time, so the times are rough.
+  - Steps that existed:
+    - cluster A and the cluster B staging;
+    - cluster C, with a stand-in DimAccount;
+    - FactMarketHistory from Paula's branch (role4/tpcdi-audit).
+  - All checks pass at SF 100: cluster A's, the cluster B staging counts, cluster C's 19, and 4 FactMarketHistory audit tests.
+  - DIGen took 83 s and wrote 9.6 GiB of raw files. After the load, the database takes 6.8 GiB, staging tables included.
+  - The run took 353 s. FactMarketHistory alone took 257 s and peaked at 18.3 GiB, just under ClickHouse's 19.3 GiB limit.
+    - Cause: the join optimizer (`query_plan_join_swap_table = 'auto'`) put the 54.5 M DailyMarket rows on the build side of the hash joins (`JoinBuildTableRowCount` 223 M).
+    - Those joins then switched to grace join and spilled 10.8 GB to disk.
+  - With `query_plan_join_swap_table = false`, the query took 44 s and 5.8 GiB, with the same result.
+    - The largest query is then DimTrade (7.6 GiB).
+    - The run would take about 140 s.
+  - Rule: when a query joins a large CTE with small dimensions, check `JoinBuildTableRowCount` in `system.query_log`. If the large side was built, set `query_plan_join_swap_table = false`.
+  - So SF 100 fits on disk, in memory and in time. Still to check: clusters B and D in full, and the incremental phases.
+  - DimTrade's memory grows with the SF (0.9 GiB at SF 10). At SF 200 it would take about 15 GiB, so it is the next limit.
 - **Series:** the reference SF and three smaller SFs (0.1×, 0.2× and 0.5× the reference), all ≥ 3. Part I taught us to check the generator before fixing the series. Using `digen_report.txt` and the audit files, check that every table grows with the SF.
 - **Generation (measured on 10 Nov):**
   - PDGF, the engine behind DIGen, is multi-threaded. SF 3 (267 MiB) and SF 10 (960 MiB) each take about 12 s, so generation is not a bottleneck.
