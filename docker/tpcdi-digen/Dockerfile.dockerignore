@@ -1,0 +1,3 @@
+# The build context is tools/: only send the DIGen zip, not the TPC-DS kit.
+*
+!*TPC-DI-Tool.zip
