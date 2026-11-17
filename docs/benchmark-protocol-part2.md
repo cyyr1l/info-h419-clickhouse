@@ -123,6 +123,13 @@ The spec only times phases. To see which steps dominate, the orchestrator also t
   - status;
   - from `system.query_log`, matched on `query_id`: rows and bytes read and written, and peak memory.
 - **Check:** per phase, the step times plus the gaps between steps must add up to EH or EI, within 1% or 1 s, whichever is larger. A larger gap means a clock or orchestrator problem.
+- **Implementation:** `part2-tpcdi/scripts/timing.py` (②). The orchestrator imports it. It implements section 1.1, sections 4.1 to 4.3 and the output files of section 6, except `audit.csv`.
+  - `Run.measure_drift("before"/"after")` measures the drift factor for 60 s each.
+  - `with run.step(phase, batch_id, step, target_table) as st:` times one step.
+    - **Every query of the step must carry `query_id=st.query_id()`**, so that its `query_log` row can be found.
+    - The validation step that writes a PCR is marked with `pcr=True`.
+  - `run.finish()` writes `steps.csv`, `summary.json` (CT0–CT3, EH, EI1, EI2, the metric and the gap check), `environment.json`, `dimessages.csv` and a copy of `digen_report.txt`.
+  - `python3 part2-tpcdi/scripts/timing.py --self-test` runs a fake 4-phase run on a throwaway database and checks every output (10 checks, all pass on 17 Nov).
 
 ### 4.3 Metric (§7.5–7.6)
 - **Rows:** RH, RI1 and RI2 are the row counts of Batch1, Batch2 and Batch3 in `digen_report.txt` (§7.5.2.2, §7.5.3.2).
