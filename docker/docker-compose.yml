@@ -78,6 +78,9 @@ services:
       context: ../tools
       dockerfile: ../docker/tpcdi-digen/Dockerfile
     image: infoh419/tpcdi-digen:1.1.0
+    # A local image: always build it (from the build cache when the zip has not changed),
+    # never try to pull it from Docker Hub.
+    pull_policy: build
     profiles: ["tools"]
     # Generated files belong to the host user instead of root (Linux/WSL2).
     user: "${UID:-1000}:${GID:-1000}"

@@ -8,8 +8,13 @@ Output: data/tpcdi/sf<SF>/Batch1, Batch2, Batch3, the *_audit.csv files, digen_r
 and manifest.json (generation time and sizes). This folder is the Staging Area: never
 modify it. An existing sf<SF> folder is never overwritten (delete it first).
 
-Requires the DIGen zip from tpc.org in tools/ (*TPC-DI-Tool.zip). The first run builds the
-Docker image infoh419/tpcdi-digen:1.1.0.
+Requires the DIGen zip from tpc.org in tools/ (*TPC-DI-Tool.zip). Each run builds the
+Docker image infoh419/tpcdi-digen:1.1.0 (from the build cache after the first time).
+
+Licence: running this script means accepting the PDGF licence (PDGF/LICENSE.txt in the
+TPC-DI tools zip), because the script answers DIGen's licence prompt for you. PDGF may only
+be used to generate TPC-DI data, for internal, academic or research purposes, and must not
+be redistributed (so DIGen stays out of Git).
 
 DIGen pitfalls handled here:
   - it asks to accept the licence: ENTER then YES are sent on stdin, and stdin stays open
@@ -118,6 +123,8 @@ def main(argv=None):
     if free < need:
         fail(f"not enough disk: {free / 2**30:.1f} GiB free, about {need / 2**30:.1f} GiB needed.")
 
+    print("Note: this script answers YES to the PDGF licence prompt of DIGen. Running it means you accept "
+          "the PDGF licence (PDGF/LICENSE.txt in the TPC-DI tools zip).")
     start = time.perf_counter()
     code = run_digen(args.sf, out_rel, report)
     seconds = time.perf_counter() - start
